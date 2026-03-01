@@ -6,3 +6,5 @@ npm run dev
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
 
 .\venv\Scripts\Activate.ps1
+
+uvicorn main:app --reload
