@@ -1,0 +1,57 @@
+
+@import "tailwindcss";
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  /* 1. 移除或修改為 light，避免瀏覽器強制轉為深色 */
+  color-scheme: light;
+  
+  /* 2. 將預設文字改為深灰色/黑色 */
+  color: #213547;
+  
+  /* 3. 強制背景為白色 */
+  background-color: #ffffff;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  display: block; /* 原本是 flex + center，可能會導致你的內容縮在中間，建議改回 block */
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #ffffff; /* 再次確保 body 也是白色的 */
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid #ccc; /* 增加邊框，不然白底配淺色按鈕會看不見 */
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #f9f9f9; /* 按鈕改為淺灰色 */
+  color: #213547; /* 按鈕文字改為深色 */
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+button:hover {
+  border-color: #646cff;
+  background-color: #e5e5e5;
+}
