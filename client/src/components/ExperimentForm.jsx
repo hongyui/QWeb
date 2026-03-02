@@ -25,12 +25,16 @@ const ExperimentForm = ({ currentExp, onStart, onClear, isIterating }) => {
                         <button 
                             onClick={onStart}
                             disabled={isIterating}
-                            className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-2.5 rounded-xl font-bold transition-all ${
-                                isIterating ? 'bg-slate-100 text-slate-400' : 'bg-slate-900 text-white hover:bg-slate-800'
-                            }`}
+                            className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-2.5 rounded-xl font-bold transition-all shadow-lg 
+                                ${isIterating 
+                                    ? 'bg-slate-100 text-slate-400' 
+                                    : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200'
+                                }
+                                ${!isIterating && !currentExp.circuit ? 'animate-pulse ring-4 ring-blue-500/30' : ''}
+                            `}
                         >
-                            {isIterating ? <RefreshCw className="animate-spin" size={18} /> : <Play size={18} />}
-                            {isIterating ? '運算中' : '開始迭代'}
+                            {isIterating ? <RefreshCw className="animate-spin" size={18} /> : <Play size={18} fill="currentColor" />}
+                            開始迭代
                         </button>
                         <button onClick={onClear} className="px-4 py-2.5 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50">
                             清除

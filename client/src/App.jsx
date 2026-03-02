@@ -54,6 +54,28 @@ function App() {
     }
   };
 
+const handleClear = async () => {
+    if (!activeExp) return;
+    const updatedExp = { ...activeExp, circuit: null, circuit_data: null };
+    setActiveExp(updatedExp);
+    setShowCircuit(false);
+
+    setExperiments(prev => prev.map(exp => 
+      exp.id === updatedExp.id ? updatedExp : exp
+    ));
+
+    // 同步後端
+    try {
+      await fetch(`http://localhost:8000/experiments/${updatedExp.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ circuit_data: null })
+      });
+    } catch (err) {
+      console.error("清除電路資料失敗:", err);
+    }
+  };
+
   const handleStartIteration = async () => {
     if (!activeExp) return;
     setIsIterating(true);
@@ -108,6 +130,25 @@ function App() {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (window.confirm("確定要刪除這個實驗嗎？")) {
+      // 從前端 State 移除，讓 UI 即時更新
+      setExperiments((prev) => prev.filter((exp) => exp.id !== id));
+      try {
+        await fetch(`http://localhost:8000/experiments/${id}`, {
+          method: 'DELETE',
+        });
+      } catch (error) {
+        console.error("刪除失敗:", error);
+      }
+
+      // 如果刪除的剛好是目前正在查看的實驗，則清空畫面
+      if (activeExp && activeExp.id === id) {
+        setActiveExp(null);
+      }
+    }
+  };
+
   const parseInputData = (inputDataString) => {
     if (!inputDataString) return [];
     
@@ -159,7 +200,9 @@ function App() {
           } catch (err) {
               console.error("載入實驗詳情失敗", err);
           }
-      }}
+        }}
+        
+        onDelete={handleDelete}
       />
 
       <div className="flex-1 flex flex-col min-w-0">
@@ -174,7 +217,7 @@ function App() {
                   currentExp={activeExp}
                   setExp={setActiveExp}
                   onStart={handleStartIteration}
-                  onClear={() => setShowCircuit(false)}
+                  onClear={handleClear}
                   isIterating={isIterating}
                 />
                 <CircuitCanvas 
