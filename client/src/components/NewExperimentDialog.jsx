@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, ChevronLeft, ChevronRight, Upload, Table as TableIcon } from 'lucide-react';
 
+    
+
 const getInitialState = () => ({
     title: '未命名實驗',
     quantumN: 4,
@@ -15,6 +17,7 @@ const NewExperimentDialog = ({ isOpen, onClose, onCreate }) => {
         quantumN: 4,
         mappings: [] // 儲存 Step 2 的表格數據
     });
+    const isReady = step === 1 ? formData.title.length > 0 : formData.mappings.length > 0;
 
     useEffect(() => {
         if (isOpen) {
@@ -242,17 +245,29 @@ const NewExperimentDialog = ({ isOpen, onClose, onCreate }) => {
                 
                 {step < 3 ? (
                     <button 
-                    onClick={nextStep}
-                    className="px-8 py-2 border border-slate-200 bg-white rounded-xl font-bold text-slate-700 shadow-sm hover:shadow transition active:scale-95"
+                        onClick={nextStep}
+                        // 透過條件式加入 animate-pulse 與 ring 效果
+                        className={`px-8 py-2 border rounded-xl font-bold transition active:scale-95 shadow-sm 
+                            ${isReady 
+                                ? 'bg-blue-50 border-blue-300 text-blue-700 animate-pulse ring-4 ring-blue-500/30' 
+                                : 'bg-white border-slate-200 text-slate-700 hover:shadow'
+                            }
+                        `}
                     >
-                    下一步
+                        下一步
                     </button>
                 ) : (
                     <button 
-                    onClick={handleFinalSubmit}
-                    className="px-8 py-2 bg-slate-900 text-white rounded-xl font-bold shadow-lg hover:bg-slate-800 transition active:scale-95"
+                        onClick={handleFinalSubmit}
+                        // 同樣加入 animate-pulse 與 ring 效果，讓視覺一致
+                        className={`px-8 py-2 rounded-xl font-bold transition active:scale-95 shadow-lg 
+                            ${isReady 
+                                ? 'bg-blue-600 text-white animate-pulse ring-4 ring-blue-500/30' 
+                                : 'bg-slate-900 text-white hover:bg-slate-800'
+                            }
+                        `}
                     >
-                    確認並開始
+                        確認並開始
                     </button>
                 )}
                 </div>

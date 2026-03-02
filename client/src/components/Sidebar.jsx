@@ -1,7 +1,7 @@
 import React from 'react';
-import { Plus, Trash2, History, Cpu } from 'lucide-react';
+import { Plus, Trash2, History, Cpu} from 'lucide-react';
 
-const Sidebar = ({ isOpen, experiments, onAdd, onClearAll, onSelect }) => {
+const Sidebar = ({ isOpen, experiments, onAdd, onClearAll, onSelect, onDelete }) => {
     return (
         // 外層 aside：只負責控制「可視區域」的寬度
         <aside 
@@ -34,12 +34,25 @@ const Sidebar = ({ isOpen, experiments, onAdd, onClearAll, onSelect }) => {
                                 onClick={() => onSelect(exp)}
                                 className="group flex items-center justify-between p-2.5 hover:bg-slate-800 rounded-lg cursor-pointer transition-colors"
                             >
-                                <div className="truncate text-sm text-slate-300 group-hover:text-white">
+                                <div className="truncate text-sm text-slate-300 group-hover:text-white flex-1 mr-2">
                                     {exp.title}
                                 </div>
-                                <span className="text-[10px] bg-slate-700 px-1.5 py-0.5 rounded text-slate-400 uppercase shrink-0 ml-2">
-                                    n={exp.quantumN}
-                                </span>
+                                
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[10px] bg-slate-700 px-1.5 py-0.5 rounded text-slate-400 uppercase shrink-0">
+                                        n={exp.quantumN}
+                                    </span>
+                                    {/* 刪除按鈕：使用 stopPropagation 防止觸發父層的 onClick */}
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onDelete(exp.id);
+                                        }}
+                                        className="w-full flex items-center gap-2 text-xs text-slate-500 hover:text-red-400 transition-colors whitespace-nowrap"
+                                    >
+                                        <Trash2 size={14} className="shrink-0" />
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>

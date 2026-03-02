@@ -1,5 +1,5 @@
 import json
-from fastapi import FastAPI, Depends, BackgroundTasks
+from fastapi import FastAPI, Depends, BackgroundTasks, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -93,6 +93,31 @@ def delete_all(db: Session = Depends(get_db)):
 def get_experiment_detail(exp_id: int, db: Session = Depends(get_db)):
     # 提取特定實驗的所有數據
     return db.query(models.Experiment).filter(models.Experiment.id == exp_id).first()
+
+@app.delete("/experiments/{experiment_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_experiment(experiment_id: int, db: Session = Depends(get_db)):
+    # 查詢該 ID 的實驗紀錄
+    db_experiment = db.query(models.Experiment).filter(models.Experiment.id == experiment_id).first()
+    # 如果找不到資料，回傳 404 錯誤
+    if not db_experiment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="找不到該實驗紀錄"
+        )
+    db.delete(db_experiment)
+    db.commit()
+    
+    return None
+
+@app.put("/experiments/{experiment_id}")
+def clear_circuit(experiment_id: int, db: Session = Depends(get_db)):
+    db_experiment = db.query(models.Experiment).filter(models.Experiment.id == experiment_id).first()
+    if not db_experiment:
+        raise HTTPException(status_code=404, detail="實驗不存在")
+    
+    db_experiment.circuit_data = None 
+    db.commit()
+    return {"message": "電路資料已清空"}
 
 if __name__ == "__main__":
     import uvicorn
