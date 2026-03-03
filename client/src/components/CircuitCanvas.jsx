@@ -122,9 +122,8 @@ const CircuitCanvas = ({ showCircuit, isIterating, n, circuitData, progress = 0 
     const totalWidth = circuitData ? (circuitData.length * stepWidth) + startX + 100 : 600;
 
     return (
-        <div className="bg-[#0f172a] rounded-3xl shadow-2xl overflow-hidden min-h-[450px] flex flex-col border border-slate-800">
-            {/* Header */}
-            <div className="p-4 bg-slate-900/50 border-b border-slate-800 flex justify-between items-center">
+        <div className="canvas-container">
+            <div className="canvas-header">
                 <div className="flex items-center gap-2">
                     <div className="flex gap-2">
                         <div className="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50"></div>
@@ -137,8 +136,8 @@ const CircuitCanvas = ({ showCircuit, isIterating, n, circuitData, progress = 0 
             </div>
 
             {isIterating && (
-                <div className="w-full h-1 bg-slate-900">
-                    <div className="h-full bg-[#60fa7c] transition-all duration-300" style={{ width: `${progress}%` }}></div>
+                <div className="progress-bar-bg">
+                    <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
                 </div>
             )}
             

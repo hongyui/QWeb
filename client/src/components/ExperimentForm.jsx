@@ -9,41 +9,37 @@ const ExperimentForm = ({ currentExp, onStart, onClear, isIterating }) => {
 
     return (
         <>
-            <div className="bg-white p-4 rounded-4xl shadow-sm border border-slate-200 mb-6 transition-all">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+            <div className="form-card">
+                <div className="form-container">
                     <div>
-                        <h2 className="text-2xl font-black text-slate-900 tracking-tight">{currentExp.title}</h2>
-                        <p className="text-slate-500 text-sm">N={currentExp.quantumN}</p>
+                        <h2 className="form-header-title">{currentExp.title}</h2>
+                        <p className="form-header-subtitle">N={currentExp.quantumN}</p>
                     </div>
-                    <div className="flex gap-3 w-full md:w-auto">
+                    
+                    <div className="form-button-group">
                         <button 
                             onClick={() => setIsTableOpen(!isTableOpen)}
-                            className="px-4 py-2.5 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 flex items-center gap-2 font-medium"
+                            className="btn-base btn-outline"
                         >
                             <TableIcon size={16} /> {isTableOpen ? '隱藏數據' : '查看數據'}
                         </button>
+                        
                         <button 
                             onClick={onStart}
                             disabled={isIterating}
-                            className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-2.5 rounded-xl font-bold transition-all shadow-lg 
-                                ${isIterating 
-                                    ? 'bg-slate-100 text-slate-400' 
-                                    : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200'
-                                }
-                                ${!isIterating && !currentExp.circuit ? 'animate-pulse ring-4 ring-blue-500/30' : ''}
-                            `}
+                            className={`btn-primary ${isIterating ? 'btn-primary-disabled' : 'btn-primary-enabled'} ${!isIterating && !currentExp.circuit ? 'btn-primary-pulse' : ''}`}
                         >
                             {isIterating ? <RefreshCw className="animate-spin" size={18} /> : <Play size={18} fill="currentColor" />}
                             開始迭代
                         </button>
-                        <button onClick={onClear} className="px-4 py-2.5 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50">
+
+                        <button onClick={onClear} className="btn-base btn-outline">
                             清除
                         </button>
                     </div>
                 </div>
             </div>
 
-            {/* 當 isTableOpen 為 true 時，顯示懸浮表格元件 */}
             {isTableOpen && (
                 <DataMappingTable 
                     mappings={currentExp.mappings} 

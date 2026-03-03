@@ -3,13 +3,9 @@ import { Plus, Trash2, History, Cpu} from 'lucide-react';
 
 const Sidebar = ({ isOpen, experiments, onAdd, onClearAll, onSelect, onDelete }) => {
     return (
-        // 外層 aside：只負責控制「可視區域」的寬度
-        <aside 
-            className={`bg-slate-900 text-white transition-all duration-300 ease-in-out border-r border-slate-800 flex flex-col ${isOpen ? 'w-64' : 'w-0'} overflow-hidden`}
-        >
-            {/* 內層容器：固定寬度 256px (w-64)，保證內容永遠不會被壓縮 */}
-            <div className="w-64 flex flex-col h-full">
-                <div className="p-4 flex items-center gap-2 border-b border-slate-800">
+        <aside className={`sidebar-aside ${isOpen ? 'w-64' : 'w-0'}`}>
+            <div className="sidebar-inner">
+                <div className="sidebar-header">
                     <Cpu className="text-blue-400 shrink-0" />
                     <span className="font-bold text-lg whitespace-nowrap tracking-tight">量子實驗平台</span>
                 </div>
@@ -17,7 +13,7 @@ const Sidebar = ({ isOpen, experiments, onAdd, onClearAll, onSelect, onDelete })
                 <div className="p-4">
                     <button 
                         onClick={onAdd}
-                        className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 py-2.5 rounded-lg font-medium transition-all active:scale-95 whitespace-nowrap"
+                        className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 py-2.5 rounded-lg font-medium transition-all active:scale-95 whitespace-nowrap text-white"
                     >
                         <Plus size={18} /> 新增實驗
                     </button>
@@ -29,28 +25,25 @@ const Sidebar = ({ isOpen, experiments, onAdd, onClearAll, onSelect, onDelete })
                     </div>
                     <div className="space-y-1">
                         {experiments.map((exp) => (
+                            /* 將 group 放在 className 中，不要 @apply 到 CSS 裡 */
                             <div 
                                 key={exp.id} 
                                 onClick={() => onSelect(exp)}
-                                className="group flex items-center justify-between p-2.5 hover:bg-slate-800 rounded-lg cursor-pointer transition-colors"
+                                className="group sidebar-item-style"
                             >
                                 <div className="truncate text-sm text-slate-300 group-hover:text-white flex-1 mr-2">
                                     {exp.title}
                                 </div>
-                                
                                 <div className="flex items-center gap-2">
-                                    <span className="text-[10px] bg-slate-700 px-1.5 py-0.5 rounded text-slate-400 uppercase shrink-0">
-                                        n={exp.quantumN}
-                                    </span>
-                                    {/* 刪除按鈕：使用 stopPropagation 防止觸發父層的 onClick */}
+                                    <span className="sidebar-label-tag">n={exp.quantumN}</span>
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onDelete(exp.id);
                                         }}
-                                        className="w-full flex items-center gap-2 text-xs text-slate-500 hover:text-red-400 transition-colors whitespace-nowrap"
+                                        className="text-slate-500 hover:text-red-400 transition-colors"
                                     >
-                                        <Trash2 size={14} className="shrink-0" />
+                                        <Trash2 size={14} />
                                     </button>
                                 </div>
                             </div>
@@ -61,9 +54,9 @@ const Sidebar = ({ isOpen, experiments, onAdd, onClearAll, onSelect, onDelete })
                 <div className="p-4 border-t border-slate-800">
                     <button 
                         onClick={onClearAll}
-                        className="w-full flex items-center gap-2 text-xs text-slate-500 hover:text-red-400 transition-colors whitespace-nowrap"
+                        className="w-full flex items-center gap-2 text-xs text-slate-500 hover:text-red-400 transition-colors"
                     >
-                        <Trash2 size={14} className="shrink-0" /> 清除所有歷史數據
+                        <Trash2 size={14} /> 清除所有數據
                     </button>
                 </div>
             </div>

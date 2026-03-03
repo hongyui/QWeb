@@ -4,11 +4,11 @@ import logo from '../assets/logo.png';
 
 const Header = ({ toggleSidebar }) => {
     return (
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-20">
+        <header className="header-bar">
             <div className="flex items-center gap-4">
                 <button 
                 onClick={toggleSidebar}
-                className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600"
+                className="icon-button-round"
                 >
                     <Menu size={20} />
                 </button>
@@ -16,14 +16,13 @@ const Header = ({ toggleSidebar }) => {
                     <img 
                         src={logo} 
                         alt="QuantumSolver Logo" 
-                        className="w-30 h-30 object-contain" 
+                        style={{ width: '120px', height: '120px', objectFit: 'contain' }}
                     />
                     <h1 className="text-xl font-extrabold tracking-tight text-slate-800">
                         Quantum<span className="text-blue-600">Solver</span>
                     </h1>
                 </div>
             </div>
-        
         </header>
     );
 };
