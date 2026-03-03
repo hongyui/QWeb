@@ -164,7 +164,7 @@ const handleClear = async () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#f8fafc] overflow-hidden">
+    <div className="app-layout">
       <Sidebar 
         isOpen={isSidebarOpen} 
         experiments={experiments} 
@@ -174,14 +174,10 @@ const handleClear = async () => {
           try {
               const response = await fetch(`http://localhost:8000/experiments/${exp.id}`);
               const fullData = await response.json();
-              
-              // 解析為包含 input 和 target 的物件陣列
               const mappedData = parseInputData(fullData.input_data);
-              // console.log("解析後的映射資料:", mappedData); 
               let parsedCircuit = null;
               if (fullData.circuit_data) {
                   try {
-                      // 如果後端存的是 JSON 字串，這裡必須解析
                       parsedCircuit = typeof fullData.circuit_data === 'string' 
                           ? JSON.parse(fullData.circuit_data) 
                           : fullData.circuit_data;
@@ -189,30 +185,26 @@ const handleClear = async () => {
                       console.error("解析電路資料失敗:", e);
                   }
               }
-
               setActiveExp({
                   ...fullData,
                   mappings: mappedData,
-                  circuit: parsedCircuit // 確保這裡存的是物件
+                  circuit: parsedCircuit 
               });
-              
               setShowCircuit(!!parsedCircuit);
           } catch (err) {
               console.error("載入實驗詳情失敗", err);
           }
         }}
-        
         onDelete={handleDelete}
       />
 
       <div className="flex-1 flex flex-col min-w-0">
         <Header toggleSidebar={() => setSidebarOpen(!isSidebarOpen)} />
         
-        <main className="flex-1 p-8 overflow-y-auto">
-          <div className="max-w-6xl mx-auto h-full">
+        <main className="main-content">
+          <div className="content-container">
             {activeExp ? (
-              /* 已選取實驗時顯示主介面 */
-              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="transition-all duration-500 opacity-100 translate-y-0">
                 <ExperimentForm 
                   currentExp={activeExp}
                   setExp={setActiveExp}
@@ -229,9 +221,8 @@ const handleClear = async () => {
                 />
               </div>
             ) : (
-              /* 空白狀態：顯示新增按鈕 */
-              <div className="h-full flex flex-col items-center justify-center text-center">
-                <div className="bg-white p-12 rounded-3xl shadow-sm border border-slate-200 flex flex-col items-center max-w-md transition-all hover:shadow-md">
+              <div className="empty-state-wrapper">
+                <div className="empty-state-card">
                   <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-6">
                     <PlusCircle size={40} />
                   </div>
