@@ -153,7 +153,7 @@ const NewExperimentDialog = ({ isOpen, onClose, onCreate }) => {
                                 onClick={() => fileInputRef.current.click()}
                                 className="flex items-center gap-2 px-4 py-2 border border-blue-200 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition"
                             >
-                                <Upload size={16} /> 從 TXT 上傳
+                                <Upload size={16} /> 匯入
                             </button>
                         </div>
                         <div className="border border-slate-200 rounded-xl overflow-hidden">
