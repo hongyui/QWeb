@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Play, RefreshCw, Table as TableIcon } from 'lucide-react';
 import DataMappingTable from './DataMappingTable'; // 匯入拆分出來的元件
 
-const ExperimentForm = ({ currentExp, onStart, onClear, isIterating }) => {
+const ExperimentForm = ({ currentExp, onStart, onClear, isIterating, onExport }) => {
     const [isTableOpen, setIsTableOpen] = useState(false);
 
     if (!currentExp) return null;
@@ -31,6 +31,10 @@ const ExperimentForm = ({ currentExp, onStart, onClear, isIterating }) => {
                         >
                             {isIterating ? <RefreshCw className="animate-spin" size={18} /> : <Play size={18} fill="currentColor" />}
                             開始迭代
+                        </button>
+
+                        <button onClick={onExport} className="btn-base btn-outline">
+                            匯出電路
                         </button>
 
                         <button onClick={onClear} className="btn-base btn-outline">

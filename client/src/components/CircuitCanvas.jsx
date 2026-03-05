@@ -122,7 +122,7 @@ const CircuitCanvas = ({ showCircuit, isIterating, n, circuitData, progress = 0 
     const totalWidth = circuitData ? (circuitData.length * stepWidth) + startX + 100 : 600;
 
     return (
-        <div className="canvas-container">
+        <div className="canvas-container relative">
             <div className="canvas-header">
                 <div className="flex items-center gap-2">
                     <div className="flex gap-2">
@@ -133,6 +133,20 @@ const CircuitCanvas = ({ showCircuit, isIterating, n, circuitData, progress = 0 
                     {isIterating && <span className="text-[10px] font-mono text-blue-400 animate-pulse ml-2 tracking-widest">REAL-TIME RENDERING</span>}
                 </div>
                 <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">Fixed Label Virtual View</span>
+            </div>
+
+            <div className={`canvas-mask-overlay ${isIterating ? 'active' : ''}`}>
+                <div className="canvas-mask-content">
+                    <div className="canvas-loader-spinner"></div>
+                    
+                    <p className="canvas-mask-status">
+                        ALGORITHM ITERATING...
+                    </p>
+                    
+                    <p className="canvas-mask-progress">
+                        {progress}% COMPLETED
+                    </p>
+                </div>
             </div>
 
             {isIterating && (
