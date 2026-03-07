@@ -44,13 +44,15 @@ function App() {
 	};
 
 	const handleClearAll = async () => {
-		try {
-			await fetch('http://localhost:8000/experiments', { method: 'DELETE' });
-			setExperiments([]);
-			setActiveExp(null);
-			setShowCircuit(false);
-		} catch (err) {
-			console.error("清除資料失敗:", err);
+		if (window.confirm("確定要刪除所有實驗嗎？")) {
+			try {
+				await fetch('http://localhost:8000/experiments', { method: 'DELETE' });
+				setExperiments([]);
+				setActiveExp(null);
+				setShowCircuit(false);
+			} catch (err) {
+				console.error("清除資料失敗:", err);
+			}
 		}
 	};
 
@@ -76,20 +78,49 @@ function App() {
 		}
 	};
 
-	const handleExport = () => {
+	const handleExport = async () => {
+		// 檢查是否有有效的實驗與電路數據
 		if (!activeExp || !activeExp.circuit) {
 			alert("目前沒有可匯出的電路資料！");
 			return;
 		}
 
-		const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(activeExp.circuit));
-		const downloadAnchorNode = document.createElement('a');
-		downloadAnchorNode.setAttribute("href", dataStr);
-		downloadAnchorNode.setAttribute("download", `${activeExp.title}_circuit.json`);
-		document.body.appendChild(downloadAnchorNode);
-		downloadAnchorNode.click();
-		downloadAnchorNode.remove();
-	}
+		try {
+			// 呼叫後端新增的 generate-qasm 路由
+			const response = await fetch('http://localhost:8000/generate-qasm', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					circuit: activeExp.circuit,
+					title: activeExp.title || "circuit"
+				}),
+			});
+
+			if (!response.ok) {
+				throw new Error('後端生成 QASM 失敗');
+			}
+
+			const data = await response.json();
+			const qasmString = data.qasm;
+
+			// 建立下載連結並觸發下載
+			const blob = new Blob([qasmString], { type: "text/plain" });
+			const url = URL.createObjectURL(blob);
+			const link = document.createElement('a');
+			link.href = url;
+			link.download = `${data.title}.qasm`;
+			document.body.appendChild(link);
+			link.click();
+
+			// 清理
+			document.body.removeChild(link);
+			URL.revokeObjectURL(url);
+
+		} catch (error) {
+			console.error("匯出失敗:", error);
+			alert("匯出失敗，請檢查後端連線或電路數據是否正確。");
+		}
+	};
 
 	const handleStartIteration = async () => {
 		if (!activeExp) return;
@@ -178,6 +209,11 @@ function App() {
 		});
 	};
 
+	const handleBackToHome = () => {
+		setActiveExp(null);
+		setShowCircuit(false);
+	};
+
 	return (
 		<div className="app-layout">
 		<Sidebar 
@@ -214,7 +250,10 @@ function App() {
 		/>
 
 		<div className="flex-1 flex flex-col min-w-0">
-			<Header toggleSidebar={() => setSidebarOpen(!isSidebarOpen)} />
+			<Header
+				toggleSidebar={() => setSidebarOpen(!isSidebarOpen)}
+				onBackToHome={handleBackToHome}
+			/>
 
 			<main className="main-content">
 				<div className="content-container">
@@ -274,7 +313,7 @@ function App() {
 							</div>
 
 							{/* 底部資源 */}
-							<div className="resource-grid">
+							{/* <div className="resource-grid">
 								<div className="resource-card">
 									<div className="resource-icon-box bg-orange-100 text-orange-600">📚</div>
 									<div className="resource-text">查看操作文件</div>
@@ -283,7 +322,7 @@ function App() {
 									<div className="resource-icon-box bg-purple-100 text-purple-600">🧪</div>
 									<div className="resource-text">範例專案匯入</div>
 								</div>
-							</div>
+							</div> */}
 						</div>
 					)}
 				</div>

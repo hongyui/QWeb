@@ -39,7 +39,7 @@
 
     /* 儀表板：核心引導區 (Hero) */
     .hero-grid { @apply grid grid-cols-1 lg:grid-cols-2 gap-12; }
-    .hero-banner { @apply lg:col-span-2 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2rem] p-12 text-white shadow-xl relative overflow-hidden; }
+    .hero-banner { @apply lg:col-span-2 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2rem] p-20 text-white shadow-xl relative overflow-hidden; }
     .hero-content { @apply relative z-10; }
     .hero-title { @apply text-2xl font-bold mb-4; }
     .hero-desc { @apply opacity-80 mb-8 max-w-md; }
