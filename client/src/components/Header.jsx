@@ -2,7 +2,7 @@ import React from 'react';
 import { Menu, Zap } from 'lucide-react';
 import logo from '../assets/logo.png';
 
-const Header = ({ toggleSidebar }) => {
+const Header = ({ toggleSidebar, onBackToHome }) => {
     return (
         <header className="header-bar">
             <div className="flex items-center gap-4">
@@ -12,7 +12,14 @@ const Header = ({ toggleSidebar }) => {
                 >
                     <Menu size={20} />
                 </button>
-                <div className="flex items-center gap-2.5">
+                <div 
+                    className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => {
+                        onBackToHome();
+                    }}
+                    role="button"
+                    tabIndex={0}
+                >
                     <img 
                         src={logo} 
                         alt="QuantumSolver Logo" 
