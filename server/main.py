@@ -160,6 +160,40 @@ async def generate_qasm(data: ExportRequest):
         print(f"QASM 生成錯誤: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.put("/experiment/{experiment_id}")
+def update_experiment(experiment_id: int, exp: ExperimentData, db: Session = Depends(get_db)):
+    # 1. 查找該實驗是否存在
+    db_experiment = db.query(models.Experiment).filter(models.Experiment.id == experiment_id).first()
+    
+    if not db_experiment:
+        raise HTTPException(status_code=404, detail="實驗不存在")
+    
+    # 2. 更新基本欄位
+    db_experiment.title = exp.title
+    
+    # 檢查 N 是否改變，若改變則清空舊電路 (保持資料一致性)
+    if db_experiment.quantumN != exp.quantumN:
+        db_experiment.circuit_data = None
+    db_experiment.quantumN = exp.quantumN
+    
+    # 3. 處理 Mappings 並轉換為資料庫儲存格式 (CSV/TXT)
+    # 修正重點：直接從 exp.mappings 提取資料，避免 AttributeError
+    try:
+        txt_content = "\n".join([f"{item['input']},{item['target']}" for item in exp.mappings])
+        db_experiment.input_data = txt_content
+    except Exception as e:
+        print(f"資料轉換錯誤: {e}")
+        # 如果傳入的是 Pydantic 物件而非 dict，則嘗試 .get() 或屬性存取
+        txt_content = "\n".join([f"{item.get('input')},{item.get('target')}" for item in exp.mappings])
+        db_experiment.input_data = txt_content
+
+    # 4. 儲存並刷新資料
+    db.commit()
+    db.refresh(db_experiment)
+    
+    # 5. 回傳完整物件給前端
+    return db_experiment
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
