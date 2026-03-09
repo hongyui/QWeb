@@ -2,34 +2,57 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, ChevronLeft, ChevronRight, Upload, Table as TableIcon } from 'lucide-react';
 
     
+const parseInputData = (inputDataString) => {
+    if (!inputDataString) return [];
 
-const getInitialState = () => ({
-    title: '未命名實驗',
-    quantumN: 1,
-    mappings: []
-});
+    return inputDataString.split('\n').filter(line => line.trim() !== "").map(line => {
+        const [input, target] = line.split(',');
+        const targetint = parseInt(target, 10)
+        return { 
+            input: input, 
+            target: targetint,
+            output: targetint.toString(2).padStart(input.length, '0')
+        };
+    });
+};
 
-const NewExperimentDialog = ({ isOpen, onClose, onCreate }) => {
-    const [step, setStep] = useState(1);
-    const fileInputRef = useRef(null);
-    const [formData, setFormData] = useState({
+const getInitialState = (initialData) => {
+    if (initialData) {
+        return {
+            title: initialData.title || '未命名實驗',
+            quantumN: initialData.quantumN || 1,
+            mappings: parseInputData(initialData.input_data) || [] 
+        };
+    }
+    return {
         title: '未命名實驗',
         quantumN: 1,
-        mappings: [] // 儲存 Step 2 的表格數據
-    });
+        mappings: []
+    };
+};
+
+const NewExperimentDialog = ({ isOpen, onClose, onCreate, initialData }) => {
+    const [step, setStep] = useState(1);
+    const fileInputRef = useRef(null);
+    const [formData, setFormData] = useState(getInitialState(initialData));
     const isReady = step === 1 ? formData.title.length > 0 : formData.mappings.length > 0;
+
 
     useEffect(() => {
         if (isOpen) {
             setStep(1);
-            setFormData(getInitialState()); 
+            setFormData(getInitialState(initialData)); 
         }
-    }, [isOpen]);
+        
+    }, [isOpen, initialData]);
 
-    // 2. 當 N 改變時：只生成新的表格數據，不重置 title
+    // 當 N 改變時只生成新的表格數據，不重置 title
     useEffect(() => {
-        // 只有在視窗開啟時才執行
         if (isOpen) {
+            // 如果是編輯模式，且 N 沒變，且 mappings 已經有資料，就不要覆蓋它
+            if (initialData && formData.quantumN === initialData.quantumN && formData.mappings.length > 0) {
+                return;
+            }
             const numRows = Math.pow(2, formData.quantumN);
             const newMappings = Array.from({ length: numRows }, (_, i) => ({
                 input: i.toString(2).padStart(formData.quantumN, '0'),
@@ -37,7 +60,6 @@ const NewExperimentDialog = ({ isOpen, onClose, onCreate }) => {
                 output: i.toString(2).padStart(formData.quantumN, '0')
             }));
             
-            // 使用 prev 確保只更新 mappings，不影響 title
             setFormData(prev => ({ ...prev, mappings: newMappings }));
         }
     }, [formData.quantumN, isOpen]);

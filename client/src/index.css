@@ -85,7 +85,8 @@
     /* 電路畫布 CircuitCanvas 遮罩與動畫 */
     .canvas-mask-overlay { @apply absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-[2px] transition-all duration-800 ease-in-out; opacity: 0; pointer-events: none;}
     .canvas-mask-overlay.active {opacity: 1; pointer-events: auto;}
-    .canvas-mask-content { @apply flex flex-col items-center p-8 rounded-2xl bg-slate-800/90  border border-blue-500/30 shadow-[0_0_50px_-12px_rgba(59,130,246,0.5)] transition-transform duration-500 ease-out scale-90; }  .canvas-loader-spinner { @apply w-8 h-8 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-3; }
+    .canvas-mask-content { @apply flex flex-col items-center p-8 rounded-2xl bg-slate-800/90  border border-blue-500/30 shadow-[0_0_50px_-12px_rgba(59,130,246,0.5)] transition-transform duration-500 ease-out scale-90; }  
+    .canvas-loader-spinner { @apply w-8 h-8 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-3; }
     .canvas-mask-overlay.active .canvas-mask-content { @apply scale-100;}
     .canvas-mask-status { @apply text-blue-400 font-mono text-sm font-bold tracking-tighter; }
     .canvas-mask-progress { @apply text-slate-400 font-mono text-[10px] mt-1; }

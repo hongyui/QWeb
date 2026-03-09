@@ -20,6 +20,7 @@ function App() {
         onConfirm: null,
 		onlyConfirm: false
     });
+	const [editingExp, setEditingExp] = useState(null);
 
 	const closeDialog = () => {
         setDialogConfig({ ...dialogConfig, isOpen: false });
@@ -35,23 +36,61 @@ function App() {
 		.catch(err => console.error("資料載入失敗:", err));
 	}, []);
 
-	const handleCreateNew = async (data) => {
+	const handleSaveExperiment = async (data) => {
 		try {
-			const response = await fetch('http://localhost:8000/experiments', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(data)
-			});
-			const { id } = await response.json();
-
-			const newExp = { id, ...data }; 
-			setExperiments([newExp, ...experiments]);
-			setActiveExp(newExp);
-			setShowCircuit(false);
+			let response;
+			if (editingExp) {
+				// 編輯模式：發送 PUT 請求到特定 ID
+				response = await fetch(`http://localhost:8000/experiment/${editingExp.id}`, {
+					method: 'PUT',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(data)
+				});
+			} else {
+				// 新增模式：發送 POST 請求
+				response = await fetch('http://localhost:8000/experiments', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(data)
+				});
+			}
+			if (!response.ok) throw new Error("後端連線或處理失敗");
+			const savedData = await response.json(); 
+			// 統一解析後端回傳的資料
+			const formattedExp = {
+				...savedData,
+				// 使用你現有的解析函式將 CSV 字串轉回陣列物件
+				mappings: parseInputData(savedData.input_data),
+				// 解析電路資料 (如果存在的話)
+				circuit: savedData.circuit_data ? JSON.parse(savedData.circuit_data) : null
+			};
+			if (editingExp) {
+				// 更新現有列表中的該筆實驗資料
+				setExperiments(prev => prev.map(exp => exp.id === formattedExp.id ? formattedExp : exp));
+			} else {
+				// 將新建立的實驗加入列表頂部
+				setExperiments(prev => [formattedExp, ...prev]);
+			}
+			// 設定當前選取的實驗，讓畫面立即更新
+			setActiveExp(formattedExp);
+			setShowCircuit(!!formattedExp.circuit); // 若有電路資料則顯示畫布
+			// 關閉對話框並清空編輯狀態
 			setIsDialogOpen(false);
+			setEditingExp(null);
 		} catch (err) {
-			console.error("建立實驗失敗:", err);
+			setDialogConfig({
+				isOpen: true,
+				message: "儲存失敗，請檢查後端連線",
+				onConfirm: async () => {}
+			});
+			console.error("Save Error:", err);
 		}
+	};
+
+	// 新增一個開啟編輯的方法
+	const handleEdit = (exp) => {
+		setEditingExp(exp);
+		setIsDialogOpen(true);
 	};
 
 	const handleClearAll = () => {
@@ -97,7 +136,11 @@ function App() {
 	const handleExport = async () => {
 		// 檢查是否有有效的實驗與電路數據
 		if (!activeExp || !activeExp.circuit) {
-			alert("目前沒有可匯出的電路資料！");
+			setDialogConfig({
+				isOpen: true,
+				message: "目前沒有可匯出的電路資料！",
+				onConfirm: async () => {}
+			});
 			return;
 		}
 
@@ -134,7 +177,11 @@ function App() {
 
 		} catch (error) {
 			console.error("匯出失敗:", error);
-			alert("匯出失敗，請檢查後端連線或電路數據是否正確。");
+			setDialogConfig({
+				isOpen: true,
+				message: "匯出失敗，請檢查後端連線或電路數據是否正確。",
+				onConfirm: async () => {}
+			});
 		}
 	};
 
@@ -235,7 +282,10 @@ function App() {
 			<Sidebar 
 				isOpen={isSidebarOpen} 
 				experiments={experiments} 
-				onAdd={() => setIsDialogOpen(true)}
+				onAdd={() => {
+					setEditingExp(null);
+					setIsDialogOpen(true);
+				}}
 				onClearAll={handleClearAll}
 				onSelect={async (exp) => {
 					if(!isIterating){
@@ -274,6 +324,7 @@ function App() {
 				}}
 				onDelete={handleDelete}
 				activeId={activeExp?.id}
+				onEdit={handleEdit}
 			/>
 
 			<div className="flex-1 flex flex-col min-w-0">
@@ -292,7 +343,8 @@ function App() {
 									onStart={handleStartIteration}
 									onClear={handleClear}
 									isIterating={isIterating}
-									onExport={handleExport}/>
+									onExport={handleExport}
+									onEdit={() => handleEdit(activeExp)}/>
 
 									<CircuitCanvas
 									showCircuit={showCircuit}
@@ -357,9 +409,11 @@ function App() {
 			</div>
 
 			<NewExperimentDialog 
-			isOpen={isDialogOpen} 
-			onClose={() => setIsDialogOpen(false)} 
-			onCreate={handleCreateNew} />
+				key={editingExp ? `edit-${editingExp.id}` : 'new-exp'}
+				isOpen={isDialogOpen} 
+				onClose={() => setIsDialogOpen(false)} 
+				onCreate={handleSaveExperiment}
+				initialData={editingExp}/>
 
 			
 			<ConfirmDialog 

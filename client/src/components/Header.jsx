@@ -23,7 +23,7 @@ const Header = ({ toggleSidebar, onBackToHome }) => {
                     <img 
                         src={logo} 
                         alt="QuantumSolver Logo" 
-                        style={{ width: '120px', height: '120px', objectFit: 'contain' }}
+                        style={{ width: 'auto', height: '40px', objectFit: 'contain' }}
                     />
                     <h1 className="text-xl font-extrabold tracking-tight text-slate-800">
                         Quantum<span className="text-blue-600">Solver</span>

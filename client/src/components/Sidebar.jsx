@@ -1,7 +1,7 @@
 import React from 'react';
-import { Plus, Trash2, History, Cpu} from 'lucide-react';
+import { Plus, Trash2, History, Cpu, Edit2} from 'lucide-react';
 
-const Sidebar = ({ isOpen, experiments, onAdd, onClearAll, onSelect, onDelete, activeId }) => {
+const Sidebar = ({ isOpen, experiments, onAdd, onClearAll, onSelect, onDelete, activeId, onEdit }) => {
     return (
         <aside className={`sidebar-aside ${isOpen ? 'w-64' : 'w-0'}`}>
             <div className="sidebar-inner">
@@ -49,6 +49,18 @@ const Sidebar = ({ isOpen, experiments, onAdd, onClearAll, onSelect, onDelete, a
                                         }`}>
                                             n={exp.quantumN}
                                         </span>
+                                        {isActive && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation(); // 防止觸發 onSelect
+                                                    onEdit(exp);
+                                                }}
+                                                className="text-blue-400 hover:text-blue-300 transition-colors p-1"
+                                                title="編輯實驗參數"
+                                            >
+                                                <Edit2 size={14} />
+                                            </button>
+                                        )}
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
