@@ -140,11 +140,11 @@ const CircuitCanvas = ({ showCircuit, isIterating, n, circuitData, progress = 0 
                     <div className="canvas-loader-spinner"></div>
                     
                     <p className="canvas-mask-status">
-                        ALGORITHM ITERATING...
+                        演算法運算中...
                     </p>
                     
                     <p className="canvas-mask-progress">
-                        {progress}% COMPLETED
+                        完成度 {progress}%
                     </p>
                 </div>
             </div>

@@ -4,6 +4,7 @@ import Header from './components/Header';
 import ExperimentForm from './components/ExperimentForm';
 import CircuitCanvas from './components/CircuitCanvas';
 import NewExperimentDialog from './components/NewExperimentDialog';
+import ConfirmDialog from './components/ConfirmDialog';
 import { PlusCircle } from 'lucide-react';
 
 function App() {
@@ -13,6 +14,16 @@ function App() {
 	const [activeExp, setActiveExp] = useState(null); // 當前正在編輯/顯示的實驗
 	const [isIterating, setIsIterating] = useState(false);
 	const [showCircuit, setShowCircuit] = useState(false);
+	const [dialogConfig, setDialogConfig] = useState({
+        isOpen: false,
+        message: "",
+        onConfirm: null,
+		onlyConfirm: false
+    });
+
+	const closeDialog = () => {
+        setDialogConfig({ ...dialogConfig, isOpen: false });
+    };
 
 	useEffect(() => {
 		fetch('http://localhost:8000/experiments')
@@ -43,18 +54,23 @@ function App() {
 		}
 	};
 
-	const handleClearAll = async () => {
-		if (window.confirm("確定要刪除所有實驗嗎？")) {
-			try {
-				await fetch('http://localhost:8000/experiments', { method: 'DELETE' });
-				setExperiments([]);
-				setActiveExp(null);
-				setShowCircuit(false);
-			} catch (err) {
-				console.error("清除資料失敗:", err);
-			}
-		}
-	};
+	const handleClearAll = () => {
+        setDialogConfig({
+            isOpen: true,
+            message: "確定要刪除所有實驗嗎？",
+            onConfirm: async () => {
+                try {
+                    await fetch('http://localhost:8000/experiments', { method: 'DELETE' });
+                    setExperiments([]);
+                    setActiveExp(null);
+                    setShowCircuit(false);
+                } catch (err) {
+                    console.error("清除資料失敗:", err);
+                }
+                closeDialog();
+            }
+        });
+    };
 
 	const handleClear = async () => {
 		if (!activeExp) return;
@@ -176,24 +192,24 @@ function App() {
 		}
 	};
 
-	const handleDelete = async (id) => {
-		if (window.confirm("確定要刪除這個實驗嗎？")) {
-			// 從前端 State 移除，讓 UI 即時更新
-			setExperiments((prev) => prev.filter((exp) => exp.id !== id));
-			try {
-				await fetch(`http://localhost:8000/experiments/${id}`, {
-					method: 'DELETE',
-				});
-			} catch (error) {
-				console.error("刪除失敗:", error);
-			}
-
-			// 如果刪除的剛好是目前正在查看的實驗，則清空畫面
-			if (activeExp && activeExp.id === id) {
-				setActiveExp(null);
-			}
-		}
-	};
+	const handleDelete = (id) => {
+        setDialogConfig({
+            isOpen: true,
+            message: "確定要刪除這個實驗嗎？",
+            onConfirm: async () => {
+                setExperiments((prev) => prev.filter((exp) => exp.id !== id));
+                try {
+                    await fetch(`http://localhost:8000/experiments/${id}`, { method: 'DELETE' });
+                } catch (error) {
+                    console.error("刪除失敗:", error);
+                }
+                if (activeExp && activeExp.id === id) {
+                    setActiveExp(null);
+                }
+                closeDialog(); // 執行完畢關閉對話框
+            }
+        });
+    };
 
 	const parseInputData = (inputDataString) => {
 		if (!inputDataString) return [];
@@ -216,123 +232,143 @@ function App() {
 
 	return (
 		<div className="app-layout">
-		<Sidebar 
-			isOpen={isSidebarOpen} 
-			experiments={experiments} 
-			onAdd={() => setIsDialogOpen(true)}
-			onClearAll={handleClearAll}
-			onSelect={async (exp) => {
-				try {
-					const response = await fetch(`http://localhost:8000/experiments/${exp.id}`);
-					const fullData = await response.json();
-					const mappedData = parseInputData(fullData.input_data);
-					let parsedCircuit = null;
-					if (fullData.circuit_data) {
+			<Sidebar 
+				isOpen={isSidebarOpen} 
+				experiments={experiments} 
+				onAdd={() => setIsDialogOpen(true)}
+				onClearAll={handleClearAll}
+				onSelect={async (exp) => {
+					if(!isIterating){
 						try {
-							parsedCircuit = typeof fullData.circuit_data === 'string' 
-							? JSON.parse(fullData.circuit_data) 
-							: fullData.circuit_data;
-						} catch (e) {
-							console.error("解析電路資料失敗:", e);
+							const response = await fetch(`http://localhost:8000/experiments/${exp.id}`);
+							const fullData = await response.json();
+							const mappedData = parseInputData(fullData.input_data);
+							let parsedCircuit = null;
+							if (fullData.circuit_data) {
+								try {
+									parsedCircuit = typeof fullData.circuit_data === 'string' 
+									? JSON.parse(fullData.circuit_data) 
+									: fullData.circuit_data;
+								} catch (e) {
+									console.error("解析電路資料失敗:", e);
+								}
+							}
+							setActiveExp({
+								...fullData,
+								mappings: mappedData,
+								circuit: parsedCircuit 
+							});
+							setShowCircuit(!!parsedCircuit);
+						} catch (err) {
+						console.error("載入實驗詳情失敗", err);
 						}
+					} else {
+						setDialogConfig({
+							isOpen: true,
+							message: "等待目前實驗迭代完成",
+							onConfirm: async () => {
+								closeDialog();
+							}
+						});
 					}
-					setActiveExp({
-						...fullData,
-						mappings: mappedData,
-						circuit: parsedCircuit 
-					});
-					setShowCircuit(!!parsedCircuit);
-				} catch (err) {
-				console.error("載入實驗詳情失敗", err);
-				}
-			}}
-			onDelete={handleDelete}
-		/>
-
-		<div className="flex-1 flex flex-col min-w-0">
-			<Header
-				toggleSidebar={() => setSidebarOpen(!isSidebarOpen)}
-				onBackToHome={handleBackToHome}
+				}}
+				onDelete={handleDelete}
+				activeId={activeExp?.id}
 			/>
 
-			<main className="main-content">
-				<div className="content-container">
-					{activeExp ? (
-							<div className="active-exp-wrapper">
-								<ExperimentForm
-								currentExp={activeExp}
-								setExp={setActiveExp}
-								onStart={handleStartIteration}
-								onClear={handleClear}
-								isIterating={isIterating}
-								onExport={handleExport}/>
+			<div className="flex-1 flex flex-col min-w-0">
+				<Header
+					toggleSidebar={() => setSidebarOpen(!isSidebarOpen)}
+					onBackToHome={handleBackToHome}
+				/>
 
-								<CircuitCanvas
-								showCircuit={showCircuit}
-								isIterating={isIterating}
-								n={activeExp.quantumN}
-								circuitData={activeExp.circuit}
-								progress={activeExp.progress || 0}/>
+				<main className="main-content">
+					<div className="content-container">
+						{activeExp ? (
+								<div className="active-exp-wrapper">
+									<ExperimentForm
+									currentExp={activeExp}
+									setExp={setActiveExp}
+									onStart={handleStartIteration}
+									onClear={handleClear}
+									isIterating={isIterating}
+									onExport={handleExport}/>
+
+									<CircuitCanvas
+									showCircuit={showCircuit}
+									isIterating={isIterating}
+									n={activeExp.quantumN}
+									circuitData={activeExp.circuit}
+									progress={activeExp.progress || 0}/>
+								</div>
+							) : (
+							<div className="empty-dashboard-wrapper">
+
+								{/* 歡迎列 */}
+								<section className="welcome-section">
+									<div>
+										<h1 className="welcome-title">您好, 研究員</h1>
+										<p className="welcome-subtitle">準備好開始新的量子電路優化了嗎？</p>
+									</div>
+									<div className="stat-card-group">
+										<div className="stat-card">
+											<div className="stat-card-label">系統狀態</div>
+											<div className="stat-card-value status-ready">Ready</div>
+										</div>
+									</div>
+								</section>
+
+								{/* 主操作區 */}
+								<div className="hero-grid">
+									<div className="hero-banner">
+										<div className="hero-content">
+											<h2 className="hero-title">建立全新實驗</h2>
+											<p className="hero-desc">
+												目前尚未選取任何實驗。請從側邊欄選擇歷史紀錄，或點擊下方按鈕建立新的電路優化任務。
+											</p>
+											<button
+											onClick={() => setIsDialogOpen(true)}
+											className="hero-btn">
+												<PlusCircle size={20} />
+												立即開始
+											</button>
+										</div>
+										<div className="hero-bg-icon">
+											<PlusCircle size={240} />
+										</div>
+									</div>
+								</div>
+
+								{/* 底部資源 */}
+								{/* <div className="resource-grid">
+									<div className="resource-card">
+										<div className="resource-icon-box bg-orange-100 text-orange-600">📚</div>
+										<div className="resource-text">查看操作文件</div>
+									</div>
+									<div className="resource-card">
+										<div className="resource-icon-box bg-purple-100 text-purple-600">🧪</div>
+										<div className="resource-text">範例專案匯入</div>
+									</div>
+								</div> */}
 							</div>
-						) : (
-						<div className="empty-dashboard-wrapper">
+						)}
+					</div>
+				</main>
+			</div>
 
-							{/* 歡迎列 */}
-							<section className="welcome-section">
-								<div>
-									<h1 className="welcome-title">您好, 研究員</h1>
-									<p className="welcome-subtitle">準備好開始新的量子電路優化了嗎？</p>
-								</div>
-								<div className="stat-card-group">
-									<div className="stat-card">
-										<div className="stat-card-label">系統狀態</div>
-										<div className="stat-card-value status-ready">Ready</div>
-									</div>
-								</div>
-							</section>
+			<NewExperimentDialog 
+			isOpen={isDialogOpen} 
+			onClose={() => setIsDialogOpen(false)} 
+			onCreate={handleCreateNew} />
 
-							{/* 主操作區 */}
-							<div className="hero-grid">
-								<div className="hero-banner">
-									<div className="hero-content">
-										<h2 className="hero-title">建立全新實驗</h2>
-										<p className="hero-desc">
-											目前尚未選取任何實驗。請從側邊欄選擇歷史紀錄，或點擊下方按鈕建立新的電路優化任務。
-										</p>
-										<button
-										onClick={() => setIsDialogOpen(true)}
-										className="hero-btn">
-											<PlusCircle size={20} />
-											立即開始
-										</button>
-									</div>
-									<div className="hero-bg-icon">
-										<PlusCircle size={240} />
-									</div>
-								</div>
-							</div>
-
-							{/* 底部資源 */}
-							{/* <div className="resource-grid">
-								<div className="resource-card">
-									<div className="resource-icon-box bg-orange-100 text-orange-600">📚</div>
-									<div className="resource-text">查看操作文件</div>
-								</div>
-								<div className="resource-card">
-									<div className="resource-icon-box bg-purple-100 text-purple-600">🧪</div>
-									<div className="resource-text">範例專案匯入</div>
-								</div>
-							</div> */}
-						</div>
-					)}
-				</div>
-			</main>
-		</div>
-
-		<NewExperimentDialog 
-		isOpen={isDialogOpen} 
-		onClose={() => setIsDialogOpen(false)} 
-		onCreate={handleCreateNew} />
+			
+			<ConfirmDialog 
+				isOpen={dialogConfig.isOpen}
+				message={dialogConfig.message}
+				onConfirm={dialogConfig.onConfirm}
+				onCancel={closeDialog}
+				onlyConfirm={isIterating}
+			/>
 		</div>
 	);
 }

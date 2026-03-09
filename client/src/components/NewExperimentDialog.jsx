@@ -5,7 +5,7 @@ import { X, ChevronLeft, ChevronRight, Upload, Table as TableIcon } from 'lucide
 
 const getInitialState = () => ({
     title: '未命名實驗',
-    quantumN: 4,
+    quantumN: 1,
     mappings: []
 });
 
@@ -14,7 +14,7 @@ const NewExperimentDialog = ({ isOpen, onClose, onCreate }) => {
     const fileInputRef = useRef(null);
     const [formData, setFormData] = useState({
         title: '未命名實驗',
-        quantumN: 4,
+        quantumN: 1,
         mappings: [] // 儲存 Step 2 的表格數據
     });
     const isReady = step === 1 ? formData.title.length > 0 : formData.mappings.length > 0;
@@ -137,7 +137,14 @@ const NewExperimentDialog = ({ isOpen, onClose, onCreate }) => {
                                     type="number"
                                     className="w-24 p-2 border border-blue-100 rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none"
                                     value={formData.quantumN}
-                                    onChange={(e) => setFormData({...formData, quantumN: parseInt(e.target.value) || 0})}
+                                    onChange={(e) => {
+                                        const val = parseInt(e.target.value);
+                                        const safeValue = isNaN(val) ? 1 : Math.max(1, val);
+                                        setFormData({
+                                            ...formData, 
+                                            quantumN: safeValue
+                                        });
+                                    }}
                                 />
                             </div>
                         </div>
