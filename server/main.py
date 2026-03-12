@@ -54,7 +54,7 @@ def create_experiment(exp: ExperimentData, db: Session = Depends(get_db)):
     db.add(new_exp)
     db.commit()
     db.refresh(new_exp)
-    return {"id": new_exp.id}
+    return new_exp
 
 @app.post("/optimize/{exp_id}")
 async def run_optimization(exp_id: int, exp: ExperimentData, db: Session = Depends(get_db)):

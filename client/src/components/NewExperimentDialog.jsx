@@ -76,7 +76,18 @@ const NewExperimentDialog = ({ isOpen, onClose, onCreate, initialData }) => {
 
     const handleTableChange = (index, newValue) => {
         const updatedMappings = [...formData.mappings];
+        // 計算當前最大允許值
+        const maxVal = Math.pow(2, formData.quantumN) - 1;
         const numericValue = parseInt(newValue, 10) || 0;
+
+        if (isNaN(numericValue)) {
+            numericValue = 0;
+        } else if (numericValue > maxVal) {
+            numericValue = maxVal; // 超過最大值則強制等於最大值
+        } else if (numericValue < 0) {
+            numericValue = 0;      // 小於 0 則強制等於 0
+        }
+
         const binaryValue = numericValue.toString(2).padStart(formData.quantumN, '0');
 
         updatedMappings[index] = {
@@ -203,6 +214,8 @@ const NewExperimentDialog = ({ isOpen, onClose, onCreate, initialData }) => {
                                                     type="number"
                                                     className="w-full p-2 border border-slate-200 rounded bg-white focus:border-blue-500 outline-none"
                                                     value={row.target}
+                                                    min="0"
+                                                    max={Math.pow(2, formData.quantumN) - 1}
                                                     onChange={(e) => handleTableChange(idx, e.target.value)}
                                                 />
                                             </td>
