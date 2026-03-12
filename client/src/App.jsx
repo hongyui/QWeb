@@ -36,6 +36,20 @@ function App() {
 		.catch(err => console.error("資料載入失敗:", err));
 	}, []);
 
+	const checkIterating = (action) => {
+		if (isIterating) {
+			setDialogConfig({
+				isOpen: true,
+				message: "等待目前實驗迭代完成",
+				onlyConfirm: true, // 假設你 ConfirmDialog 有這個 prop 來隱藏取消按鈕
+				onConfirm: closeDialog
+			});
+			return false;
+		}
+		action();
+		return true;
+	};
+
 	const handleSaveExperiment = async (data) => {
 		try {
 			let response;
@@ -86,6 +100,32 @@ function App() {
 			console.error("Save Error:", err);
 		}
 	};
+
+	const handleSelectExperiment = async (exp) => {
+		try {
+			const response = await fetch(`http://localhost:8000/experiments/${exp.id}`);
+			const fullData = await response.json();
+			const mappedData = parseInputData(fullData.input_data);
+			let parsedCircuit = null;
+			if (fullData.circuit_data) {
+				try {
+					parsedCircuit = typeof fullData.circuit_data === 'string' 
+					? JSON.parse(fullData.circuit_data) 
+					: fullData.circuit_data;
+				} catch (e) {
+					console.error("解析電路資料失敗:", e);
+				}
+			}
+			setActiveExp({
+				...fullData,
+				mappings: mappedData,
+				circuit: parsedCircuit 
+			});
+			setShowCircuit(!!parsedCircuit);
+		} catch (err) {
+		console.error("載入實驗詳情失敗", err);
+		}
+	}
 
 	// 新增一個開啟編輯的方法
 	const handleEdit = (exp) => {
@@ -282,126 +322,88 @@ function App() {
 			<Sidebar 
 				isOpen={isSidebarOpen} 
 				experiments={experiments} 
-				onAdd={() => {
+				onAdd={() => checkIterating(() => {
 					setEditingExp(null);
 					setIsDialogOpen(true);
-				}}
-				onClearAll={handleClearAll}
-				onSelect={async (exp) => {
-					if(!isIterating){
-						try {
-							const response = await fetch(`http://localhost:8000/experiments/${exp.id}`);
-							const fullData = await response.json();
-							const mappedData = parseInputData(fullData.input_data);
-							let parsedCircuit = null;
-							if (fullData.circuit_data) {
-								try {
-									parsedCircuit = typeof fullData.circuit_data === 'string' 
-									? JSON.parse(fullData.circuit_data) 
-									: fullData.circuit_data;
-								} catch (e) {
-									console.error("解析電路資料失敗:", e);
-								}
-							}
-							setActiveExp({
-								...fullData,
-								mappings: mappedData,
-								circuit: parsedCircuit 
-							});
-							setShowCircuit(!!parsedCircuit);
-						} catch (err) {
-						console.error("載入實驗詳情失敗", err);
-						}
-					} else {
-						setDialogConfig({
-							isOpen: true,
-							message: "等待目前實驗迭代完成",
-							onConfirm: async () => {
-								closeDialog();
-							}
-						});
-					}
-				}}
-				onDelete={handleDelete}
+				})}
+				onClearAll={() => checkIterating(handleClearAll)}
+				onSelect={(exp) => checkIterating(() => handleSelectExperiment(exp))}
+				onDelete={(id) => checkIterating(() => handleDelete(id))}
 				activeId={activeExp?.id}
-				onEdit={handleEdit}
+				onEdit={(exp) => checkIterating(() => handleEdit(exp))}
 			/>
 
 			<div className="flex-1 flex flex-col min-w-0">
 				<Header
 					toggleSidebar={() => setSidebarOpen(!isSidebarOpen)}
-					onBackToHome={handleBackToHome}
+					onBackToHome={() => checkIterating(handleBackToHome)}
 				/>
 
 				<main className="main-content">
 					<div className="content-container">
 						{activeExp ? (
+							<div 
+								key={activeExp.id} 
+								className="animate-in"
+							>
 								<div className="active-exp-wrapper">
 									<ExperimentForm
-									currentExp={activeExp}
-									setExp={setActiveExp}
-									onStart={handleStartIteration}
-									onClear={handleClear}
-									isIterating={isIterating}
-									onExport={handleExport}
-									onEdit={() => handleEdit(activeExp)}/>
+										currentExp={activeExp}
+										setExp={setActiveExp}
+										onStart={handleStartIteration}
+										onClear={() => checkIterating(handleClear)}
+										isIterating={isIterating}
+										onExport={() => checkIterating(handleExport)}
+										onEdit={() => checkIterating(() => handleEdit(activeExp))}
+									/>
 
 									<CircuitCanvas
-									showCircuit={showCircuit}
-									isIterating={isIterating}
-									n={activeExp.quantumN}
-									circuitData={activeExp.circuit}
-									progress={activeExp.progress || 0}/>
+										showCircuit={showCircuit}
+										isIterating={isIterating}
+										n={activeExp.quantumN}
+										circuitData={activeExp.circuit}
+										progress={activeExp.progress || 0}
+									/>
 								</div>
-							) : (
-							<div className="empty-dashboard-wrapper">
-
-								{/* 歡迎列 */}
-								<section className="welcome-section">
-									<div>
-										<h1 className="welcome-title">您好, 研究員</h1>
-										<p className="welcome-subtitle">準備好開始新的量子電路優化了嗎？</p>
-									</div>
-									<div className="stat-card-group">
-										<div className="stat-card">
-											<div className="stat-card-label">系統狀態</div>
-											<div className="stat-card-value status-ready">Ready</div>
+							</div>
+						) : (
+							<div key="home" className="animate-in">
+								<div className="empty-dashboard-wrapper">
+									<section className="welcome-section">
+										<div>
+											<h1 className="welcome-title">您好, 研究員</h1>
+											<p className="welcome-subtitle">準備好開始新的量子電路優化了嗎？</p>
 										</div>
-									</div>
-								</section>
-
-								{/* 主操作區 */}
-								<div className="hero-grid">
-									<div className="hero-banner">
-										<div className="hero-content">
-											<h2 className="hero-title">建立全新實驗</h2>
-											<p className="hero-desc">
-												目前尚未選取任何實驗。請從側邊欄選擇歷史紀錄，或點擊下方按鈕建立新的電路優化任務。
-											</p>
-											<button
-											onClick={() => setIsDialogOpen(true)}
-											className="hero-btn">
-												<PlusCircle size={20} />
-												立即開始
-											</button>
+										<div className="stat-card-group">
+											<div className="stat-card">
+												<div className="stat-card-label">系統狀態</div>
+												<div className="stat-card-value status-ready">Ready</div>
+											</div>
 										</div>
-										<div className="hero-bg-icon">
-											<PlusCircle size={240} />
+									</section>
+
+									{/* 主操作區 */}
+									<div className="hero-grid">
+										<div className="hero-banner">
+											<div className="hero-content">
+												<h2 className="hero-title">建立全新實驗</h2>
+												<p className="hero-desc">
+													目前尚未選取任何實驗。請從側邊欄選擇歷史紀錄，或點擊下方按鈕建立新的電路優化任務。
+												</p>
+												<button
+													onClick={() => checkIterating(() => setIsDialogOpen(true))}
+													className="hero-btn"
+												>
+													<PlusCircle size={20} />
+													立即開始
+												</button>
+											</div>
+											<div className="hero-bg-icon">
+												<PlusCircle size={240} />
+											</div>
 										</div>
 									</div>
 								</div>
-
-								{/* 底部資源 */}
-								{/* <div className="resource-grid">
-									<div className="resource-card">
-										<div className="resource-icon-box bg-orange-100 text-orange-600">📚</div>
-										<div className="resource-text">查看操作文件</div>
-									</div>
-									<div className="resource-card">
-										<div className="resource-icon-box bg-purple-100 text-purple-600">🧪</div>
-										<div className="resource-text">範例專案匯入</div>
-									</div>
-								</div> */}
 							</div>
 						)}
 					</div>
@@ -411,8 +413,8 @@ function App() {
 			<NewExperimentDialog 
 				key={editingExp ? `edit-${editingExp.id}` : 'new-exp'}
 				isOpen={isDialogOpen} 
-				onClose={() => setIsDialogOpen(false)} 
-				onCreate={handleSaveExperiment}
+				onClose={() => checkIterating(() => setIsDialogOpen(false))} 
+				onCreate={() => checkIterating(handleSaveExperiment)}
 				initialData={editingExp}/>
 
 			

@@ -94,7 +94,7 @@
     /* 對話框與表格 Dialog & Table */
     .modal-overlay { @apply fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4; }
     .modal-content { @apply bg-white w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]; }
-    .floating-table-card { @apply fixed top-24 right-10 z-50 w-[480px] bg-white shadow-2xl rounded-2xl border border-slate-200 overflow-hidden; }
+    .floating-table-card { @apply fixed top-24 right-10 z-100 w-[480px] bg-white shadow-2xl rounded-2xl border border-slate-200 overflow-hidden; }
 
     /* 特定字體樣式 */
     .table-cell-mono-indigo { @apply p-3 text-sm font-mono text-indigo-400; }
