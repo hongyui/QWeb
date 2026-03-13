@@ -69,6 +69,7 @@ async def run_optimization(exp_id: int, exp: ExperimentData, db: Session = Depen
                 data = json.loads(chunk.replace("data: ", ""))
                 if "circuit" in data:
                     final_circuit = data["circuit"]
+            print("final_circuit: ", final_circuit)
             yield chunk
         
         # 迭代完成後存入 DB

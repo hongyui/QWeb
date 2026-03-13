@@ -14,7 +14,7 @@ NumIter = 1000
 experiment = 1
 N = 10
 
-def check(gate):
+def check(gate,n):
     # print("gate:",gate)
     in_output=[]
     inp=[]
@@ -266,6 +266,51 @@ def repairQ4(toto):
 def gen_nbrs(q1,q2,q3,q4,N):
     neighbours1 = [np.array(measureQ1(q1)) for i in range(N)]
     neighbours2 = [(measureQ2(q2)) for i in range(N)]
+    # neighbours1 =[np.array([[1, 1, 1],
+    #    [1, 1, 1],
+    #    [1, 1, 1],
+    #    [0, 1, 0],
+    #    [1, 1, 0]]),np.array([[1, 1, 1],
+    #    [1, 1, 1],
+    #    [1, 1, 1],
+    #    [0, 1, 0],
+    #    [1, 1, 0]]),np.array([[1, 1, 1],
+    #    [1, 1, 1],
+    #    [1, 1, 1],
+    #    [0, 1, 0],
+    #    [1, 1, 0]]),np.array([[1, 1, 1],
+    #    [1, 1, 1],
+    #    [1, 1, 1],
+    #    [0, 1, 0],
+    #    [1, 1, 0]]),np.array([[1, 1, 1],
+    #    [1, 1, 1],
+    #    [1, 1, 1],
+    #    [0, 1, 0],
+    #    [1, 1, 0]]),np.array([[1, 1, 1],
+    #    [1, 1, 1],
+    #    [1, 1, 1],
+    #    [0, 1, 0],
+    #    [1, 1, 0]]),np.array([[1, 1, 1],
+    #    [1, 1, 1],
+    #    [1, 1, 1],
+    #    [0, 1, 0],
+    #    [1, 1, 0]]),np.array([[1, 1, 1],
+    #    [1, 1, 1],
+    #    [1, 1, 1],
+    #    [0, 1, 0],
+    #    [1, 1, 0]]),np.array([[1, 1, 1],
+    #    [1, 1, 1],
+    #    [1, 1, 1],
+    #    [0, 1, 0],
+    #    [1, 1, 0]]),np.array([[1, 1, 1],
+    #    [1, 1, 1],
+    #    [1, 1, 1],
+    #    [0, 1, 0],
+    #    [1, 1, 0]])]
+    #     # n1_adj [7, 7, 7, 2, 6]
+    #     # n2_adj [4, 5, 0, 9, 0]
+    
+    # neighbours2 =[[[0, 0, 0, 1, 0, 0], [1, 0, 1], [0, 0, 0], [1, 0, 0, 1], [0, 0]],[[0, 0, 0, 1, 0, 0], [1, 0, 1], [0, 0, 0], [1, 0, 0, 1], [0, 0]],[[0, 0, 0, 1, 0, 0], [1, 0, 1], [0, 0, 0], [1, 0, 0, 1], [0, 0]],[[0, 0, 0, 1, 0, 0], [1, 0, 1], [0, 0, 0], [1, 0, 0, 1], [0, 0]],[[0, 0, 0, 1, 0, 0], [1, 0, 1], [0, 0, 0], [1, 0, 0, 1], [0, 0]],[[0, 0, 0, 1, 0, 0], [1, 0, 1], [0, 0, 0], [1, 0, 0, 1], [0, 0]],[[0, 0, 0, 1, 0, 0], [1, 0, 1], [0, 0, 0], [1, 0, 0, 1], [0, 0]],[[0, 0, 0, 1, 0, 0], [1, 0, 1], [0, 0, 0], [1, 0, 0, 1], [0, 0]],[[0, 0, 0, 1, 0, 0], [1, 0, 1], [0, 0, 0], [1, 0, 0, 1], [0, 0]],[[0, 0, 0, 1, 0, 0], [1, 0, 1], [0, 0, 0], [1, 0, 0, 1], [0, 0]]]
     neighbours3 = [(measureQ3(q3)) for i in range(N)]
     neighbours4 = [(measureQ4(q4)) for i in range(N)]
     # print("neighbours4",neighbours4)
@@ -273,7 +318,7 @@ def gen_nbrs(q1,q2,q3,q4,N):
 
 def route_neighbour(n1,n2,n3,n4,q2_bit_table,trans,n):
     #neighbours出來不是解喔 我們要根據1~4排好順序對不對~ 根據q1看順序 根據q2看斷頭 根據q3看路線 q1~q3用成一個list都是差一位元的路線
-    
+     
     # 接著q4也要根據q2重新用一下他的排序(但不要改到neighbours4，用copy)最後會留下list和q4來生成電路
     circuit_solution=[]
     for i in range(N):
@@ -306,6 +351,14 @@ def route_neighbour(n1,n2,n3,n4,q2_bit_table,trans,n):
                 tmp_s.append(tmp)
             n3_adj.append(tmp_s)
         
+        # print("n1",n1_adj)
+        # print("n2",n2_adj)
+        # n1_adj= [0, 1]
+        # n2_adj= [0, 0]
+        # print("n1",n1_adj)
+        # print("n2",n2_adj)
+        # n1_adj= [1, 1]
+        # n2_adj= [1, 0]
         circuit_solution.append(make_route(n1_adj,n2_adj,n3_adj,n4[i],trans,n)) #地i個族群neighbours進去形成一個我要的路線和閘
         
     return circuit_solution
@@ -319,8 +372,11 @@ def route_tenbit(index,solution3,trans,n):
     if solution3[0]!=999:
 
         #solution3處理
+        # print("solution3",solution3)
         so33 = sorted(enumerate(solution3), key=lambda x: x[1],reverse=True)
+        # print("so33",so33)  
         pp = [idx for idx, val in so33]
+        # print("pp",pp)
         # print("pp",pp)
         # print("trans",trans)
         start=trans[index]
@@ -345,7 +401,7 @@ def route_tenbit(index,solution3,trans,n):
             binary_str = ''.join(str(b) for b in arr1)
             decimal = int(binary_str, 2)
             route.append(decimal)
-
+            # print("decimal",decimal)
 
         #轉換十進制
         # binary_str = ''.join(str(b) for b in bits)
@@ -363,15 +419,1192 @@ def route_tenbit(index,solution3,trans,n):
     return route
 
 
+def build_q3(index,solution3,trans,fg,n):
+    #算個位元差回傳 build多一個參數 陣列 跟收到的要看看
+    route=[]
+    lc_one=0
+    lc_two=0
+    # print("index",index)
+    # print("tra",trans)
+    # print("solution3",solution3)
+    if solution3[0]!=999:
+
+        #solution3處理
+        so33 = sorted(enumerate(solution3), key=lambda x: x[1],reverse=True)
+        pp = [idx for idx, val in so33]
+        # print("pp",pp)
+        # print("trans",trans)
+        start=trans[index]
+        route.append(start)
+        end=trans[index+1]
+        bin_minus=hamming_distance(start,end)
+        arr1=[int(b) for b in bin(start)[2:].zfill(n)]
+        arr2=[int(b) for b in bin(end)[2:].zfill(n)]
+        if fg:
+            lc_one=start
+            lc_two=end
+        # print("start",start)
+        # print("end",end)
+        # print("arr1",arr1)
+        # print("arr2",arr2)
+        location=[]
+        for ind in range(len(arr1)):
+            #來看哪幾個不重複 紀錄索引直
+            if arr1[ind]!=arr2[ind]:
+                location.append(ind)
+
+    else:
+        start=trans[index]
+        end=trans[index+1]
+        route.append(start)
+        route.append(end)
+        bin_minus=hamming_distance(start,end)
+        arr1=[int(b) for b in bin(start)[2:].zfill(n)]
+        arr2=[int(b) for b in bin(end)[2:].zfill(n)]
+        pp=[999]
+        if fg:
+            lc_one=start
+            lc_two=end
+        location=[]
+        for ind in range(len(arr1)):
+            #來看哪幾個不重複 紀錄索引直
+            if arr1[ind]!=arr2[ind]:
+                location.append(ind)
+        
+    # print("route",  route)
+
+    return location,bin_minus,lc_one,lc_two
+
+def build_nt_q3(nt_o,nt_t,n): #計算循環下一個的第一組
+    #算個位元差回傳 build多一個參數 陣列 跟收到的要看看
+    route=[]
+    lc_one=0
+    lc_two=0
+    # print("index",index)
+    # print("tra",trans)
+    # print("solution3",solution3)
+    
+    start=nt_o
+    route.append(start)
+    end=nt_t
+    arr1=[int(b) for b in bin(start)[2:].zfill(n)]
+    arr2=[int(b) for b in bin(end)[2:].zfill(n)]
+
+    location=[]
+    for ind in range(len(arr1)):
+        #來看哪幾個不重複 紀錄索引直
+        if arr1[ind]!=arr2[ind]:
+            location.append(ind)
+
+
+    return location
+
+def analyze_sequences_ka(data,hamm,common_value,inp_cycle_total): #目前這個才對
+    # 初始化：counts 用來存數量 (int)，elements 用來存找到的元素 (list)
+    counts = [0] * (len(data))
+    elements = [[] for _ in range(len(data))]
+
+    # print("counts",counts)
+    # print("elements",elements)
+    #0223 取自最後一個陣列出來
+    get_fi=data[-1]
+    matched_elements=[]
+    
+    #v3
+    tw_b=data[0] #未配對位置索引直
+
+    # print("data",data)
+    # print("最後一個確認",get_fi)
+
+    # if hamm[]==1: 代表他是1並且沒有被蕭 如果後面可以消 前面的要看一下
+
+    if len(data)==1:
+        counts.append(0)
+        elements.append([])
+    # 走訪到倒數第二個，因為最後一個沒有「下一個」可以比對
+    for i in range(len(data) - 1):
+        # print("i",i)
+        # print("elements",elements)
+        current_arr = data[i]
+        # print("current_arr",current_arr)
+        matched_elements = []
+        kc_ham=hamm[i]
+        if len(elements[i])!=0: #代表空的 可以給全滿hamm[i] 
+            kc_ham=hamm[i]-1-len(elements[i])
+        # 建立探索指標，從下一個開始
+        next_idx = i + 1
+        ton=False #看是不是可以決定 要不要app insert
+        # ka_count=-1
+        ka_count=len(elements[i])
+        while next_idx < len(data) and kc_ham>0: #判斷有沒有超出陣列
+            # print("elements",elements)
+            next_arr = data[next_idx] #比對的是下一個
+            # print("next_arr",next_arr)
+            # 找出 current_arr 中有出現在 next_arr 裡的元素
+            # 且該元素還沒被這一次探索記錄過
+            found = [x for x in current_arr if x in next_arr and x not in matched_elements]
+            # print("found",found)
+            if found:
+                matched_elements.extend(found)
+            
+            #如果現在是
+            #bug修復 當已有尾消的陣列 再加上頭 會導致錯位
+            tmp_fd=[] #新陣列站存
+            for fd in found: #pop出來 放進
+                data[i].remove(fd) #刪頭
+                data[next_idx].remove(fd) #刪接
+                #回傳接頭.
+                
+                tmp_fd.insert(0,fd)
+                
+                elements[next_idx].append(fd)
+                kc_ham-=1#美有一個就-1長度
+            # ka_count+=1
+            # print("ka_count",ka_count)
+            # print("elements",elements)
+            for td in tmp_fd:
+                if ton:
+                    elements[i].insert(ka_count,td)
+                else:
+                    elements[i].append(td)
+            #特例自己一 前一個可以幫忙消 單獨在算一次
+            if hamm[i]==1 and i!=0 and len(found)==1 and (counts[i-2]+1 < hamm[i-1]): #代表他是1並且沒有被蕭 如果後面可以消 前面的要看一下  #且不是第一個 因為要往前看 #且此輪可以和下個配對到
+                # print("特例單")
+                found = [x for x in data[i-1] if x in next_arr and x not in matched_elements]
+                if found:
+                    matched_elements.extend(found)
+                    tmp_fd=[] #新陣列站存
+                    # print("tmp_fd",tmp_fd)
+                    for fd in found: #pop出來 放進
+                        data[i-1].remove(fd) #刪頭
+                        data[next_idx].remove(fd) #刪接
+                        #回傳接頭.
+                        tmp_fd.insert(0,fd)
+                        elements[next_idx].append(fd)
+                        kc_ham-=1#美有一個就-1長度
+                    for fd in tmp_fd:
+                        elements[i-1].append(fd)
+                
+            # 條件判斷：如果 next_arr 長度為 1，代表可以繼續往後看
+            if len(found) == 1 and (next_idx + 1) < len(data) and hamm[next_idx]==1:
+                # print("如果 next_arr 長度為 1")
+                next_idx += 1
+                ton=True
+            else:
+                # 否則停止這次向後的探索
+                break
+        
+        # 紀錄結果：數量給 0 (不再是空列表)，元素保持列表
+        counts[i]=len(matched_elements)
+        
+            
+        # print("ele",elements)
+        # print("此輪counts",counts)
+        # print("此輪elements",elements)
+        # elements.append(matched_elements)
+    # print("counts",counts)
+    # print("elements",elements)
+    return counts, elements, get_fi,  elements[-1], elements[0], tw_b
+
+def analyze_sequences_kb(data,hamm,common_value): #目前這個才對
+    # 初始化：counts 用來存數量 (int)，elements 用來存找到的元素 (list)
+    counts = [0] * (len(data))
+    elements = [[] for _ in range(len(data))]
+    # print("counts",counts)
+    # print("elements",elements)
+    #0223 取自最後一個陣列出來
+    get_fi=data[-1]
+    matched_elements=[]
+    # print("common_value",common_value)
+    #v3
+    tw_b=data[0] #未配對位置索引直
+
+    # print("data",data)
+    # print("最後一個確認",get_fi)
+
+    # if hamm[]==1: 代表他是1並且沒有被蕭 如果後面可以消 前面的要看一下
+
+    if len(data)==1:
+        counts.append(0)
+        elements.append([])
+    # 走訪到倒數第二個，因為最後一個沒有「下一個」可以比對
+    for i in range(len(data) - 1):
+        # print("i",i)
+        current_arr = data[i]
+        matched_elements = []
+        kc_ham=hamm[i]
+        if len(elements[i])!=0: #代表空的 可以給全滿hamm[i] 
+            kc_ham=hamm[i]-1-len(elements[i])
+        # 建立探索指標，從下一個開始
+        next_idx = i + 1
+        ton=False #看是不是可以決定 要不要app insert
+        # ka_count=-1
+        ka_count=len(elements[i])
+        while next_idx < len(data) and kc_ham>0: #判斷有沒有超出陣列
+            # print("elements",elements)
+            next_arr = data[next_idx] #比對的是下一個
+            # 找出 current_arr 中有出現在 next_arr 裡的元素
+            # 且該元素還沒被這一次探索記錄過
+            if i==0: #第一個
+                kb_found=[] #在這裡以特例 要配合˙
+                # print("matched_elements",matched_elements)
+                # print('common_value not in matched_elements',common_value not in matched_elements)
+                if common_value in next_arr and common_value not in matched_elements:
+                    kb_found =[common_value]
+                
+                    if len(kb_found)==1:
+                        matched_elements.extend(kb_found)
+            
+            found = [x for x in current_arr if x in next_arr and x not in matched_elements]
+            if found:
+                matched_elements.extend(found)
+            if i==0:
+                found=kb_found+found
+            
+            #如果現在是
+            #bug修復 當已有尾消的陣列 再加上頭 會導致錯位
+            tmp_fd=[] #新陣列站存
+            for fd in found: #pop出來 放進
+                data[i].remove(fd) #刪頭
+                data[next_idx].remove(fd) #刪接
+                #回傳接頭.
+                
+                tmp_fd.insert(0,fd)
+                
+                elements[next_idx].append(fd)
+                kc_ham-=1#美有一個就-1長度
+            
+            # ka_count+=1
+            # # print("ka_count",ka_count)
+            # print("elements",elements)
+            for td in tmp_fd:
+                if ton:
+                    elements[i].insert(ka_count,td)
+                else:
+                    elements[i].append(td)
+            #特例自己一 前一個可以幫忙消 單獨在算一次
+            if hamm[i]==1 and i!=0 and len(found)==1 and (counts[i-2]+1 < hamm[i-1]): #代表他是1並且沒有被蕭 如果後面可以消 前面的要看一下  #且不是第一個 因為要往前看 #且此輪可以和下個配對到
+                # print("特例單")
+                found = [x for x in data[i-1] if x in next_arr and x not in matched_elements]
+                if found:
+                    matched_elements.extend(found)
+                    tmp_fd=[] #新陣列站存
+                    # print("tmp_fd",tmp_fd)
+                    for fd in found: #pop出來 放進
+                        data[i-1].remove(fd) #刪頭
+                        data[next_idx].remove(fd) #刪接
+                        #回傳接頭.
+                        tmp_fd.insert(0,fd)
+                        elements[next_idx].append(fd)
+                        kc_ham-=1#美有一個就-1長度
+                    for fd in tmp_fd:
+                        elements[i-1].append(fd)
+                
+            # 條件判斷：如果 next_arr 長度為 1，代表可以繼續往後看
+            if len(found) == 1 and (next_idx + 1) < len(data) and hamm[next_idx]==1:
+                # print("如果 next_arr 長度為 1")
+                next_idx += 1
+                ton=True
+            else:
+                # 否則停止這次向後的探索
+                break
+        
+        # 紀錄結果：數量給 0 (不再是空列表)，元素保持列表
+        counts[i]=len(matched_elements)
+        
+            
+        # print("ele",elements)
+        # print("此輪counts",counts)
+        # print("此輪elements",elements)
+        # elements.append(matched_elements)
+    # print("counts",counts)
+    # print("elements",elements)
+    return counts, elements, get_fi,  elements[-1], elements[0], tw_b
+
+
+def analyze_sequences(data,hamm):
+    # print("data",data)
+    # print("hamm",hamm)
+    counts = []   # 紀錄出現的數量
+    elements = [] # 紀錄出現的元素
+    
+    # print("data",data)
+    if len(data)==1:
+        counts.append(0)
+        elements.append([])
+    # 走訪到倒數第二個，因為最後一個沒有「下一個」可以比對
+    for i in range(len(data) - 1):
+        current_arr = data[i]
+        # print("current_arr",current_arr)
+        matched_elements = []
+        kc_ham=hamm[i]
+        if len(elements[i])!=0: #代表空的 可以給全滿hamm[i] 
+            kc_ham=hamm[i]-1-len(elements[i])
+        # 建立探索指標，從下一個開始
+        next_idx = i + 1
+        
+        while next_idx < len(data) and kc_ham>0: #判斷有沒有超出陣列
+            next_arr = data[next_idx] #比對的是下一個
+            # print("next_arr",next_arr)
+            # 找出 current_arr 中有出現在 next_arr 裡的元素
+            # 且該元素還沒被這一次探索記錄過
+            found = [x for x in current_arr if x in next_arr and x not in matched_elements]
+            # print("found",found)
+            if found:
+                matched_elements.extend(found)
+                
+            # 條件判斷：如果 next_arr 長度為 1，代表可以繼續往後看
+            if len(next_arr) == 1 and len(found) == 1 and (next_idx + 1) < len(data):
+                next_idx += 1
+            else:
+                # 否則停止這次向後的探索
+                break
+        
+        # 紀錄結果：數量給 0 (不再是空列表)，元素保持列表
+        # print("matched_elements",matched_elements)
+        counts.append(len(matched_elements))
+        elements.append(matched_elements)
+        
+    return counts, elements
+def analyze_sequences_test(data,hamm): #目前這個才對
+    # 初始化：counts 用來存數量 (int)，elements 用來存找到的元素 (list)
+    counts = [0] * (len(data))
+    elements = [[] for _ in range(len(data))]
+
+    # print("counts",counts)
+    # print("elements",elements)
+    #0223 取自最後一個陣列出來
+    get_fi=data[-1]
+    matched_elements=[]
+    
+    #v3
+    tw_b=data[0] #未配對位置索引直
+
+    # print("data",data)
+    # print("hamm",hamm)
+    # print("最後一個確認",get_fi)
+
+    # if hamm[]==1: 代表他是1並且沒有被蕭 如果後面可以消 前面的要看一下
+
+    if len(data)==1:
+        counts.append(0)
+        elements.append([])
+    # 走訪到倒數第二個，因為最後一個沒有「下一個」可以比對
+    for i in range(len(data) - 1):
+        current_arr = data[i]
+        # print("current_arr",current_arr)
+        matched_elements = []
+        kc_ham=hamm[i]
+        if len(elements[i])!=0: #代表空的 可以給全滿hamm[i] 
+            kc_ham=hamm[i]-1-len(elements[i])
+
+        # 建立探索指標，從下一個開始
+        next_idx = i + 1
+        ton=False #看是不是可以決定 要不要app insert
+        while next_idx < len(data) and kc_ham>0: #判斷有沒有超出陣列
+            next_arr = data[next_idx] #比對的是下一個
+            # print("next_arr",next_arr)
+            # 找出 current_arr 中有出現在 next_arr 裡的元素
+            # 且該元素還沒被這一次探索記錄過
+            found = [x for x in current_arr if x in next_arr and x not in matched_elements]
+            if found:
+                matched_elements.extend(found)
+            
+            #如果現在是
+            #bug修復 當已有尾消的陣列 再加上頭 會導致錯位
+            tmp_fd=[] #新陣列站存
+            for fd in found: #pop出來 放進
+                data[i].remove(fd) #刪頭
+                data[next_idx].remove(fd) #刪接
+                #回傳接頭.
+                
+                tmp_fd.insert(0,fd)
+                
+                elements[next_idx].append(fd)
+                
+                kc_ham-=1#美有一個就-1長度
+            
+            if ton:
+                elements[i]=tmp_fd+elements[i]
+            else:
+                for fd in tmp_fd:
+                    elements[i].append(fd)
+            #特例自己一 前一個可以幫忙消 單獨在算一次
+            if hamm[i]==1 and i!=0 and len(found)==1 and (counts[i-2]+1 < hamm[i-1]): #代表他是1並且沒有被蕭 如果後面可以消 前面的要看一下  #且不是第一個 因為要往前看 #且此輪可以和下個配對到
+                # print("特例單")
+                found = [x for x in data[i-1] if x in next_arr and x not in matched_elements]
+                if found:
+                    matched_elements.extend(found)
+                    tmp_fd=[] #新陣列站存
+                    for fd in found: #pop出來 放進
+                        data[i-1].remove(fd) #刪頭
+                        data[next_idx].remove(fd) #刪接
+                        #回傳接頭.
+                        tmp_fd.insert(0,fd)
+                        elements[next_idx].append(fd)
+                    for fd in tmp_fd:
+                        elements[i-1].append(fd)
+                
+            # 條件判斷：如果 next_arr 長度為 1，代表可以繼續往後看
+            if len(found) == 1 and (next_idx + 1) < len(data) and hamm[next_idx]==1:
+                # print("如果 next_arr 長度為 1")
+                next_idx += 1
+                ton=True
+            else:
+                # 否則停止這次向後的探索
+                break
+        
+        # 紀錄結果：數量給 0 (不再是空列表)，元素保持列表
+        counts[i]=len(matched_elements)
+        
+            
+        # print("ele",elements)
+        # print("此輪counts",counts)
+        # print("此輪elements",elements)
+        # elements.append(matched_elements)
+    # print("counts",counts)
+    # print("elements",elements)
+    return counts, elements, get_fi,  elements[-1], elements[0], tw_b
+
+
+
+def custom_set_zero(data):
+    for i in range(len(data)):
+        item = data[i]
+        
+        if isinstance(item, list):
+            # 檢查這是否為最深層的數值列表 (即列表內不再有列表)
+            is_deepest = all(not isinstance(x, list) for x in item)
+            
+            if is_deepest:
+                if len(item) == 1:
+                    data[i] = [999]
+                else:
+                    # 長度大於 1 的深層列表，內容全部歸零
+                    data[i] = [0] * len(item)
+            else:
+                # 如果不是最深層，繼續往裡面走
+                custom_set_zero(item)
+                
+                # 特殊處理：如果子層處理完後，發現目前這層原本應該是容器但變成了某種狀態
+                # 這裡會持續遞迴直到最底層
+        else:
+            # 如果直接遇到數值
+            if item != 999:
+                data[i] = 0
+
+def pre_dici(nt_one, nt_two, lc_one, lc_two, next_index, q3_index):
+
+    #先預測有沒有機會配對到
+    it_index=0
+    nt_one_lc_two=hamming_distance(nt_one,lc_two)
+    nt_one_lc_one=hamming_distance(nt_one,lc_one)
+    nt_two_lc_two=hamming_distance(nt_two,lc_two)
+    nt_two_lc_one=hamming_distance(nt_two,lc_one)
+    #1是 這個循環最後要尾 新的要頭
+    #2是 這個循環最後要頭 新的要頭
+    #好像不用
+    #3是 這個循環最後要尾 新的要尾
+    #4是 這個循環最後要頭 新的要尾
+
+    common_value=-1
+    #直接搜尋有沒有機會
+    for val_a in q3_index:
+        for val_b in next_index:
+            if val_a ==val_b: #2 和配對到的 下一個頭
+                common_value = val_a
+                break  # 找到第一個就跳出迴圈
+    
+    if common_value != -1:
+        if nt_one_lc_two==1 or nt_one_lc_one==1 : # 尾頭
+            it_index=1 #這樣就ok
+
+    return it_index
+
+
+def dici(nt_one,nt_two,lc_one,lc_two,get_fi,he_fi,nt_index):
+
+    #obe來判斷是否可以用1.3 因為會有限制 前後加起來不能超過
+    #2.4是因為它們吃的是頭 不用尾
+    obe=False
+    ka_four=0
+    inp_cycle_total=0
+    # get_fi
+    if len(he_fi)!=0: #他不是空的 
+        if len(get_fi)>1: #要大於1
+            obe=True
+    else:obe=True #==0 直接過
+
+    #這是有的
+    # print("common_value",common_value)
+    
+    nt_one_lc_two=hamming_distance(nt_one,lc_two)
+    nt_one_lc_one=hamming_distance(nt_one,lc_one)
+    nt_two_lc_two=hamming_distance(nt_two,lc_two)
+    nt_two_lc_one=hamming_distance(nt_two,lc_one)
+    #才去看hamm 然後配對1.2.3.4
+    #要先3後2 後1  因為3.2都不太會需要用到新的 可以用舊的
+    #正常條so3
+    common_value = []  # 先預設一個空值
+
+    #找循環間共同索引直
+    if len(get_fi)>0:
+        for val in get_fi:
+            if val in nt_index:
+                common_value.append(val) 
+    #3
+    if nt_two_lc_two==1 and len(common_value)!=0 and obe : #因為有順序 所以1.3先拉到前面判斷
+            inp_cycle_total=3 
+
+    #2
+    if inp_cycle_total==0 and len(he_fi)>0: #代表前面是沒配對到
+        common_value=[] #調回來
+        if he_fi[0] in nt_index : #如果第一個有在裡面的話 就可以繼續配對2.4
+            common_value.append(he_fi[0])
+            if nt_one_lc_one==1 and len(common_value)!=0 :#and obe_after:
+                inp_cycle_total=2
+
+    #1
+    
+    if inp_cycle_total==0: #如果==0 代表前面沒達成
+        #找循環間共同索引直 #2被重製了
+        if len(get_fi)>0:
+            for val in get_fi:
+                if val in nt_index:
+                    common_value.append(val) 
+        if nt_one_lc_two==1 and len(common_value)!=0 and obe :#and obe_after #代表兩個都符合了
+            inp_cycle_total=1 #這樣就ok
+
+    
+    #4 好像是獨立出來的 如果前 後 都一定要配到的 如果沒有 可以幫忙媒合
+        
+    if nt_two_lc_one==1 and len(common_value)!=0 and len(he_fi)>0:
+        ka_four=1
+                
+
+        #226 
+        
+        #1是 這個循環最後要尾 新的要頭 正常看還有多少get_fi
+        #有get_fi 就直接配對(原本的)尾就好 不要頭? 因為你都有測index了
+        #2是 這個循環最後要頭 新的要頭 
+        #這個好像只能是和本的頭 第一個 對 所以直接看he_fi的第一個索引直有沒有配對
+        #抓1,2,3,4 和 位置  #這個原本的就不用動 新的頭要弄
+
+        #3是 這個循環最後要尾 新的要尾 正常看還有多少get_fi
+        #有get_fi 就直接配對(原本的)尾就好 因為你都有測index了
+        #注意這裡要好好的條後面的尾
+
+        #4是 這個循環最後要頭 新的要尾 
+        #這個好像只能是和本的頭 第一個 對 所以直接看he_fi的第一個索引直有沒有配對
+        #注意這裡要好好的條後面的尾
+
+        #先直接看索引值
+
+        #把one two 去和 目前最後的 位置去搭配 ##抓對喔lc_one和lc_two (if final)
+        #hamming nt_one,lc_two ==1 , hamming nt_one,lc_one == hamm值的-1 1
+        #hamming nt_one,lc_two ==hamm值的-1 , hamming nt_one,lc_one == 1 2  和1相反
+        #hamming nt_two,lc_two ==1 , hamming nt_two,lc_one == hamm值的-1 3  和1,2不同的是把nt_one改成nt_two
+        #hamming nt_two,lc_two ==hamm值的-1 , hamming nt_two,lc_one == 1 3
+
+        #分別對應1~4 放進一個值
+        #設一個if  >0 #接著才丟到 看索引值的地方 把目前剩餘的local 和new的build_q3 特別針對ntone two 的local媒合
+        #如果有成功媒到 額外紀錄這個值放進前面說是cycle_total  如果沒有媒合到 就是丟0進去 不管
+
+    # if inp_cycle_total==0: #代表在上面沒有進去或得到 還是有可能是2.4
+    #     common_value=-1
+
+    #接著判斷是否為2.4例外 是否就是可化簡
+    #原本的he_fi 和 nt_index 有沒有關係
+    # common_indices = None # 記錄這些值在 he_fi 中的索引位置
+
+    ###### 好像只能是第一個才能
+    # if len(common_value)!=0: #有的話再看一次nt_one 和 lc_two  (2,4)
+    #     inp_cycle_total=4
+    #     for idx, val in enumerate(he_fi):
+    #         if val in nt_index:
+    #             # for 迴圈 enumerate來看 
+    #             # 然後抓到的common_indices
+    #             common_value = val
+    #             common_indices = idx +1 #索引值加一 就是位元差
+                #如果 common_indices==nt_one_lc_two (2) 或 ==nt_two_lc_two (4) 這樣代表
+                # q3_hamming_mid[-1]-common_indices和 ==nt_one_lc_one (2) 或 ==nt_two_lc_one (4)
+                #這邊有的話就直接break
+                #有的話紀錄 common_value 就是要接的位置索引值
+
+
+
+
+    return common_value,inp_cycle_total,ka_four
+
+
 def make_route(solution1,solution2,solution3,solution4,trans,n): #這樣是一組解弄成路線
+    
+    # print("start!!!!!!!!!!!!!!!11")
+    # print("solution1",solution1)
+    # print("solution2",solution2)
+    # print("輸出樣式solution3",solution3)
+    # set_zero(solution3)
+    custom_set_zero(solution3)
+    # print("輸出樣式solution3",solution3)    
     route_so=[]
     route_gate=[]
-    sorted_with_index = sorted(enumerate(solution1), key=lambda x: x[1],reverse=True)
+    sorted_with_index = sorted(enumerate(solution1), key=lambda x: x[1], reverse=True)
     original_indices = [idx for idx, val in sorted_with_index]
     # print("trans",trans)
+    # print("sorted_with_index",sorted_with_index)
     # print("對應原本的索引：", original_indices) #[1, 2, 0]
     # print("solution3",solution3)
-    for so1 in original_indices:
+    
+    #0201每一個解 用斷邊和循環順序，先建立位置
+    q3_index=[]
+    q3_hamming=[]
+    #v4
+    kb_counts = []   # 紀錄出現的數量
+    kb_elements = [] # 紀錄出現的元素
+    route_so=[] #刷新裝
+    length_cycle=len(solution1) #紀錄總長度
+    cy_cy_zerone=[] #紀錄循環間有沒有機會消除
+    #紀錄循環間當前剩餘和頭 和 下一個的頭的剩餘和尾
+    #如果最後一次的話就紀錄剩餘和頭就好
+    #這裡會有兩次判斷 
+    #v3
+    ky_lc_one=[]
+    ky_lc_two=[]
+    ky_nt_index=[]
+    ky_nt_index_leap=[]
+    ky_q3_index_mid=[]
+
+    for ind,so1 in enumerate(original_indices):
+        q3_index_mid=[]
+        q3_hamming_mid=[]
+        index=solution2[so1] #因為斷邊 所以從這裡開始
+        
+        
+        num=len(solution3[so1])
+        
+        if num==1:
+            #代表只有一個交換 我們在前面只用一個 沒有循環 在這裡偷偷加一
+            num=2
+        fg=False
+        for so2 in range(num-1): #要減一 因為斷邊
+            
+            if index >=num: #如果超出迴圈 因為是循環 會回到第一個
+                index=0
+            # print("trans[so1]",trans[so1])
+            # print("index",index)
+            if so2 == num-2:
+                fg=True
+            t1,ham,lc_one,lc_two=build_q3(index,solution3[so1][index],trans[so1],fg,n)
+            # print("solution3[so1][index]",solution3[so1][index])
+            if fg:
+                ky_lc_one.append(lc_one)
+                ky_lc_two.append(lc_two)
+            #roa路線
+            #roa_gate是閘的順序
+            # print("roa_gate",roa_gate)
+            q3_index_mid.append(t1)
+            q3_hamming_mid.append(ham) #中間節點數量=hamming -1 
+            
+            index+=1
+        q3_index.append(q3_index_mid)
+        q3_hamming.append(q3_hamming_mid)
+        # print("q3_index",q3_index)
+        if ind<len(original_indices)-1:  #最後一組 不用配對
+            # print("下一個循環",trans[original_indices[ind+1]])
+            #抓下一個的頭尾
+            nt_one=trans[original_indices[ind+1]][solution2[original_indices[ind+1]]]
+            nt_two=trans[original_indices[ind+1]][solution2[original_indices[ind+1]]+1]
+            
+            next_index=build_nt_q3(nt_one,nt_two,n) #v3應該不需要
+        
+            #這東西在這裡目的是 未了要先判斷 有沒有機會配對而已 所以應該是傳入
+            it_index=pre_dici(nt_one, nt_two, lc_one, lc_two, next_index, q3_index_mid[-1])
+            cy_cy_zerone.append(it_index) #好像沒用了
+        #=--------------------------------------------------------------
+        # v4 參數準備
+        
+        #這是整體的要準備 不知用不用的到
+        # print("q3_index",q3_index) 
+        # print("q3_hamming",q3_hamming) #和hamming
+        # cy_cy_zerone 整體循環間化簡
+
+        # lc_one 當前的 0
+        # lc_two 當前的-1
+
+        #q3_index_mid 還沒分析的索引值
+        #q3_hamming_mid #和hamming
+
+        
+        # nt_one 下個的 0
+        # nt_two 下個的 -1
+        # next_index 下個 可配對的索引值
+        # print("q3_index_mid",q3_index_mid)
+        # print("q3_hamming_mid",q3_hamming_mid)
+        # print("next_index",next_index)
+        # #it_index 循環間有沒有機會化簡
+        # print("it_index",it_index)
+
+    #在這裡判斷多少量-------------------------------------------------------------------
+    kb_cy=[]
+    kb_index=[]
+    ka_nt_index=[]
+    ka_bool=True
+    # print("一組")
+    for ind,so1 in enumerate(original_indices):
+
+        q3_index_mid_copy = copy.deepcopy(q3_index[ind])
+        q3_hamming_mid_copy = copy.deepcopy(q3_hamming[ind])
+        # print("開始了")
+        # print("q3_index_mid",q3_index[ind])
+        # print("q3_hamming",q3_hamming[ind])
+        #延續觀察q3 共同索引值 
+        # print()
+        
+        #v4 拉到都生成好後
+        # if ind==0: #先做這個
+        if ka_bool: #一開始一定true 正常輸入出
+            # print("q3_index_mid_copy",q3_index_mid_copy)
+            counts_tmp,elements_tmp,get_fi,he_fi,tw_aa,tw_bb=analyze_sequences_test(q3_index_mid_copy,q3_hamming_mid_copy)
+            # print("yes",counts_tmp)
+            # if ind==0: #第一個不用
+            kb_cy.append(0)
+            kb_index.append(-1) #索引值一定0以上 
+
+        else:
+            #還沒改好 如果
+            #insert q3_index_mid_copy,q3_hamming_mid_copy 然後就可以開始配對
+            #0302
+            # print("進入for搜尋common_value")
+            # print("common_value",common_value)
+            #直接給一版 
+            if inp_cycle_total==3: #3不用加進analyze_sequences_ka配對 先獨立的那種 另外處理 後續如果 沒成功 就再看4
+                #直接做 看的是[0] 一個是正常版 一個是[0]套進去 比對出來
+                q3_index_mid_copy = copy.deepcopy(q3_index[ind])
+                q3_hamming_mid_copy = copy.deepcopy(q3_hamming[ind])
+                # print("q3_index_mid_copy",q3_index_mid_copy)
+                counts_tmp,elements_tmp,get_fi,he_fi,tw_aa,tw_bb=analyze_sequences_test(q3_index_mid_copy,q3_hamming_mid_copy)
+                kb_count=sum(counts_tmp)
+                kb_val=-1
+                
+                if len(elements_tmp[0])!=0 and elements_tmp[0][-1] in common_value :
+                    pass
+                else:#代表需手動
+                    for idx,val in enumerate(common_value): #再迴圈中套用kb
+                        q3_index_mid_copy = copy.deepcopy(q3_index[ind])
+                        q3_hamming_mid_copy = copy.deepcopy(q3_hamming[ind])
+                        kb_counts_tmp,kb_elements_tmp,kb_get_fi,kb_he_fi,kb_tw_aa,kb_tw_bb=analyze_sequences_kb(q3_index_mid_copy,q3_hamming_mid_copy,val)
+                        
+                        # print("counts_tmp",counts_tmp)
+                        # if idx==0: #第一組直接加
+                        #     counts_tmp=kb_counts_tmp
+                        #     kb_count=sum(counts_tmp) #計算次數
+                        #     elements_tmp=kb_elements_tmp
+                        #     get_fi=kb_get_fi
+                        #     he_fi=kb_he_fi
+                        #     tw_aa=kb_tw_aa
+                        #     tw_bb=kb_tw_bb
+                        #     kb_val=val
+
+                        #大於等於 因為沒有+1代表加了有效
+                        if sum(kb_counts_tmp)>=kb_count: 
+                            # print("大於代表加了有效")
+                            counts_tmp=kb_counts_tmp
+                            kb_count=sum(counts_tmp) #計算次數
+                            elements_tmp=kb_elements_tmp
+                            get_fi=kb_get_fi
+                            he_fi=kb_he_fi
+                            tw_aa=kb_tw_aa
+                            tw_bb=kb_tw_bb
+                            kb_val=val
+
+                #for搜尋完
+                if kb_val!=-1: #有東西
+                    kb_cy.append(inp_cycle_total) #有
+                    kb_index.append(kb_val)
+                else:
+                    kb_cy.append(0)
+                    kb_index.append(-1)
+                
+            
+            elif inp_cycle_total==1 or inp_cycle_total==2: #1.2在這裡處理 不同的是 因為3不用加進analyze_sequences_ka配對 先獨立的那種 另外處理 後續如果 沒成功 就再看4  三也要另外看==
+                for idx,val in enumerate(common_value):
+                    
+                    q3_index_mid_copy = copy.deepcopy(q3_index[ind])
+                    q3_hamming_mid_copy = copy.deepcopy(q3_hamming[ind])
+                    q3_hamming_mid_copy.insert(0, 1)
+                    q3_index_mid_copy.insert(0,[val])
+                    kb_counts_tmp,kb_elements_tmp,kb_get_fi,kb_he_fi,kb_tw_aa,kb_tw_bb=analyze_sequences_ka(q3_index_mid_copy,q3_hamming_mid_copy,val,inp_cycle_total)
+                    # 拿掉[0] 並同時仙裝進去
+                    #直接拿掉 是為了 要配對而已 已有另外紀錄
+                    kb_counts_tmp.pop(0)
+                    kb_elements_tmp.pop(0)
+                    q3_hamming_mid_copy.pop(0)
+                    q3_index_mid_copy.pop(0)
+
+                    if idx==0: #第一組直接加
+                        counts_tmp=kb_counts_tmp
+                        kb_count=sum(counts_tmp) #計算次數
+                        elements_tmp=kb_elements_tmp
+                        get_fi=kb_get_fi
+                        he_fi=kb_he_fi
+                        tw_aa=kb_tw_aa
+                        tw_bb=kb_tw_bb
+                        kb_val=val
+
+                    elif sum(kb_counts_tmp)>kb_count:
+                        counts_tmp=kb_counts_tmp
+                        kb_count=sum(counts_tmp) #計算次數
+                        elements_tmp=kb_elements_tmp
+                        get_fi=kb_get_fi
+                        he_fi=kb_he_fi
+                        tw_aa=kb_tw_aa
+                        tw_bb=kb_tw_bb
+                        kb_val=val
+
+                #for搜尋完
+                if counts_tmp[0]!=0: #有東西
+                    kb_cy.append(inp_cycle_total) #有
+                    kb_index.append(kb_val)
+                else:
+                    kb_cy.append(0)
+                    kb_index.append(-1)
+                    
+                # print("counts_tmp",counts_tmp)
+                # print("elements_tmp",elements_tmp)
+                # print("kb_cy",kb_cy)
+                # print("kb_index",kb_index)
+
+            # kb_four_index_head #他的索引值
+            #一樣
+            #直接做 看的是[0] 一個是正常版 一個是[0]套進去 比對出來
+            elif ka_four==1:
+                q3_index_mid_copy = copy.deepcopy(q3_index[ind])
+                kc_one_index=q3_index_mid_copy[0]
+                q3_hamming_mid_copy = copy.deepcopy(q3_hamming[ind])
+                counts_tmp,elements_tmp,get_fi,he_fi,tw_aa,tw_bb=analyze_sequences_test(q3_index_mid_copy,q3_hamming_mid_copy)
+                kb_count=sum(counts_tmp)
+                if kb_four_index_head in kc_one_index:
+                    kc_go=True
+                else: kc_go=False
+            
+                if len(elements_tmp[0])==0 and kc_go:#不等於才看'
+                    q3_index_mid_copy = copy.deepcopy(q3_index[ind])
+                    q3_hamming_mid_copy = copy.deepcopy(q3_hamming[ind])
+                    
+                    kb_counts_tmp,kb_elements_tmp,kb_get_fi,kb_he_fi,kb_tw_aa,kb_tw_bb=analyze_sequences_kb(q3_index_mid_copy,q3_hamming_mid_copy,kb_four_index_head) #丟對了
+                    
+                    #大於代表加了有效
+                    if sum(kb_counts_tmp)>=kb_count: 
+                        # print("大於代表加了有效")
+                        counts_tmp=kb_counts_tmp
+                        kb_count=sum(counts_tmp) #計算次數
+                        elements_tmp=kb_elements_tmp
+                        get_fi=kb_get_fi
+                        he_fi=kb_he_fi
+                        tw_aa=kb_tw_aa
+                        tw_bb=kb_tw_bb
+                elif len(elements_tmp[0])!=0 and kc_go:
+                    if elements_tmp[0][-1]!=kb_four_index_head:
+                        q3_index_mid_copy = copy.deepcopy(q3_index[ind])
+                        q3_hamming_mid_copy = copy.deepcopy(q3_hamming[ind])
+                        kb_counts_tmp,kb_elements_tmp,kb_get_fi,kb_he_fi,kb_tw_aa,kb_tw_bb=analyze_sequences_kb(q3_index_mid_copy,q3_hamming_mid_copy,kb_four_index_head) #丟對了
+                        
+                        #大於代表加了有效
+                        if sum(kb_counts_tmp)>=kb_count: 
+                            # print("大於代表加了有效")
+                            counts_tmp=kb_counts_tmp
+                            kb_count=sum(counts_tmp) #計算次數
+                            elements_tmp=kb_elements_tmp
+                            get_fi=kb_get_fi
+                            he_fi=kb_he_fi
+                            tw_aa=kb_tw_aa
+                            tw_bb=kb_tw_bb
+                
+                kb_cy.append(0)
+                kb_index.append(-1)
+                   
+            
+
+    
+        if ind<len(original_indices)-1:  #最後一組 不用配對
+            # print("下一個循環",trans[original_indices[ind+1]])
+            #抓下一個的頭尾
+            nt_one=trans[original_indices[ind+1]][solution2[original_indices[ind+1]]]
+            nt_two=trans[original_indices[ind+1]][solution2[original_indices[ind+1]]+1]
+            
+            nt_index=build_nt_q3(nt_one,nt_two,n) #v3應該不需要
+            ka_nt_index.append(nt_index)
+            common_value,inp_cycle_total,ka_four=dici(nt_one,nt_two,ky_lc_one[ind],ky_lc_two[ind],get_fi,he_fi,nt_index) 
+            # print("common_value",common_value)
+            # print("inp_cycle_total",inp_cycle_total)
+            # print("ka_four",ka_four)
+            # print("get_fi",get_fi)
+            # print("he_fi",he_fi)
+            if len(he_fi)!=0:
+                kb_four_index_head=he_fi[0]
+            if inp_cycle_total!=0 or ka_four==1: #代表有
+                ka_bool=False
+            else:ka_bool=True
+        # print("lc_one",lc_one) #當前最後頭
+        # print("lc_two",lc_two) #當前最後尾
+        # print("tw_aa",tw_aa) #頭的排序 如果=0 代表沒有後 有的話 抓0
+        # print("tw_bb",tw_bb) #未配對位置索引直
+        ky_q3_index_mid.append(q3_index_mid[-1])
+        #要跳過第一個
+        if ind>0:
+            ky_nt_index.append(tw_bb) #剩下的
+            ky_nt_index_leap.append(tw_aa) #配對的
+        
+        index=solution2[so1] #因為斷邊 所以從這裡開始
+        
+        # print("counts_tmp",counts_tmp)
+        # print("elements_tmp",elements_tmp)
+        # print("q3_index",q3_index)
+        for j,tmpi in enumerate(counts_tmp): #生成中間節點順序 solution3的解
+            # print("j",j)
+            if tmpi !=0: #代表有要處理
+                #這裡有三個特例
+                #1.基本的 往後看
+                #2.下一個是 q3_hamming[ind][j+1]==1
+                #3. 當前是q3_hamming[ind][j]==1
+                if q3_hamming[ind][j]==1: #3先 (須測試)  (3-2可以)
+                    # print("現在是一格")
+                    # print("tmpi",tmpi)
+                    #自己會跟前一個往下扣 在那個陣列才會最後排序
+                    #自己不用調
+                    dn=1-tmpi #這樣就會是負的 應證上
+                    if q3_hamming[ind][j-1]!=1:
+                        for tmpj in range(tmpi-1):
+                            et=elements_tmp[j-1][-1-tmpj] #位置索引值
+                            #看全索引直(q3_index[ind])裡面是第幾個
+                            ad_et=0
+                            for inde in q3_index[ind][j-1]: #這是裡面的值
+                                if inde==et:
+                                    # 真正條q3的地方 索引值
+                                    break
+                                else:ad_et+=1
+                            # print("index",index)
+                            # print("sol3",solution3)
+                            # print("要調的so3位置",ad_et)
+                            solution3[so1][index-1][ad_et]+=dn
+                            dn+=1 #如果有下一個 高一點  這樣才能排後面的前面一點
+                    # print("tmpi前夕",tmpi)
+                    index=(index+1)%len(solution3[so1])
+                    up=tmpi #要升的值 up
+                    
+                    for tmpj in range(tmpi):
+                        # print("elements_tmp[j][tmpj]",elements_tmp[j][tmpj])
+                        et=elements_tmp[j+1][tmpj] #位置索引值
+                        # print("up_et",et)
+                        ad_et=0
+                        # print("q3_index[ind][j+1]",q3_index[ind][j+1])
+                        for inde in q3_index[ind][j+1]: #這是裡面的值
+                            if inde==et:
+                                # 真正條q3的地方 索引值
+                                break
+                            else:ad_et+=1
+                        # print("adet",ad_et)
+                        # print("index",index)
+                        # print("sol3",solution3)
+                        solution3[so1][index][ad_et]+=up
+                        up-=1 #如果有下一個 高一點  這樣才能排後面的前面一點
+                    # print("結果3--------",solution3)
+                
+                elif q3_hamming[ind][j+1]==1: #2先 (須測試) (3-2可以)
+                    # print("下一個是一格")
+                    #下一個是 q3_hamming[ind][j+1]==1
+                    #自己會跟前一個往下扣 在那個陣列才會最後排序
+                    dn=-tmpi #這樣就會是負的 應證上
+                    for tmpj in range(tmpi):
+                        et=elements_tmp[j][-1-tmpj] #位置索引值
+                        #看全索引直(q3_index[ind])裡面是第幾個
+                        ad_et=0
+                        for inde in q3_index[ind][j]: #這是裡面的值
+                            if inde==et:
+                                # 真正條q3的地方 索引值
+                                break
+                            else:ad_et+=1
+                        # print("index",index)
+                        # print("sol3",solution3)
+                        # print("要調的so3位置",ad_et)
+                        solution3[so1][index][ad_et]+=dn
+                        dn+=1 #如果有下一個 高一點  這樣才能排後面的前面一點
+
+                    index=(index+1)%len(solution3[so1])
+                    nt=(index+1)%len(solution3[so1])
+                    up=tmpi-1 #要升的值 up
+                    if tmpi!=1 and q3_hamming[ind][j+2]!=1: #大於二 代表一定會有後後 不能是len(1)
+                        for tmpj in range(tmpi-1):
+                            # print("elements_tmp[j][tmpj]",elements_tmp[j][tmpj])
+                            et=elements_tmp[j+2][tmpj] #位置索引值
+                            ad_et=0
+                            for inde in q3_index[ind][j+2]: #這是裡面的值
+                                if inde==et:
+                                    # 真正條q3的地方 索引值
+                                    break
+                                else:ad_et+=1
+                            # print("index",index)
+                            # print("sol3",solution3)
+                            solution3[so1][nt][ad_et]+=up
+                            up-=1 #如果有下一個 高一點  這樣才能排後面的前面一點
+                    # print("結果2--------",solution3)
+                else : #1.基本的 往後看
+                    # print("基本")
+                    #下一個是 q3_hamming[ind][j+1]==1
+                    #自己會跟前一個往下扣 在那個陣列才會最後排序
+                    dn=-tmpi #這樣就會是負的 應證上
+                    for tmpj in range(tmpi):
+                        et=elements_tmp[j][-1-tmpj] #位置索引值
+                        #看全索引直(q3_index[ind])裡面是第幾個
+                        ad_et=0
+                        for inde in q3_index[ind][j]: #這是裡面的值
+                            if inde==et:
+                                # 真正條q3的地方 索引值
+                                break
+                            else:ad_et+=1
+                        # print("index",index)
+                        # print("sol3",solution3)
+                        # print("要調的so3位置",ad_et)
+                        solution3[so1][index][ad_et]+=dn
+                        dn+=1 #如果有下一個 高一點  這樣才能排後面的前面一點
+
+                    index=(index+1)%len(solution3[so1])
+                    up=tmpi #要升的值 up
+                    for tmpj in range(tmpi):
+                        # print("elements_tmp[j][tmpj]",elements_tmp[j][tmpj])
+                        et=elements_tmp[j+1][tmpj] #位置索引值
+                        ad_et=0
+                        for inde in q3_index[ind][j+1]: #這是裡面的值
+                            if inde==et:
+                                # 真正條q3的地方 索引值
+                                break
+                            else:ad_et+=1
+                        # print("index",index)
+                        # print("sol3",solution3)
+                        solution3[so1][index][ad_et]+=up
+                        up-=1 #如果有下一個 高一點  這樣才能排後面的前面一點
+                    # print("結果1--------",solution3)
+                            
+            else:index=(index+1)%len(solution3[so1])
+            # print("so3後",solution3)
+            # print("----------------------------")
+        # print("kb_cy",kb_cy)
+        # print("kb_index",kb_index)
+        # print("ind",ind)
+        #0302繼續 
+        #如果kb_cy.append(0) 
+        #        kb_index.append(-1) #有的話 抓這裡 然後條機率 這個 左右都要喔
+        # print("看抓的值對不對",kb_cy[ind])
+        #這裡的改成 目前的 是後  -1是前喔
+        # print("original_indices",original_indices)
+        # print("kb_cy[ind]",kb_cy[ind])
+        if ind<=len(original_indices)-1 and kb_cy[ind]>0 : #有沒有大於0阿
+            # print("近來了")
+            # print("ind",ind)
+            ka_mi=original_indices[ind-1]
+            if len(solution3[ka_mi])==1:
+                tmp_index=0
+            else:
+                tmp_index=solution2[ka_mi]-2 
+            if kb_cy[ind]==1 or kb_cy[ind]==3 : #1.3做的是差不多
+                if len(solution3[ka_mi][tmp_index])!=1: #先處理前面 如果不是==1 就是999
+                    ad_et=0
+                    # print("q3_index[ind]",q3_index[ind])
+                    # print("q3_index[ind]",q3_index[ind][0])
+                    
+                    # print("q3_index_mid",q3_index[ind])
+                    # print("kb_index[ind]",kb_index[ind])
+                    for inde in q3_index[ind-1][-1]: #這是裡面的值
+                        if inde==kb_index[ind]:
+                            # 真正條q3的地方 索引值
+                            break
+                        else:ad_et+=1
+                    # print("ad_et",ad_et)
+                    # print("ad_et",ad_et)
+                    # print("s3",solution3[ka_mi][tmp_index])
+                    # print("len",len(solution3[ka_mi][tmp_index]))
+                    # print("min",min(solution3[ka_mi][tmp_index]))
+                    solution3[ka_mi][tmp_index][ad_et]+=min(solution3[ka_mi][tmp_index])-1
+                    # print("s3 after",solution3[ka_mi][tmp_index])
+                #前面好了
+                tmp_index=solution2[original_indices[ind]] #重新賦予值
+                if len(solution3[original_indices[ind]][tmp_index])!=1: #再處理後面 如果不是==1 就是999
+                    ad_et=0
+                    
+                    for inde in ka_nt_index[ind-1]: #這是裡面的值
+                        if inde==kb_index[ind]:
+                            # 真正條q3的地方 索引值
+                            break
+                        else:ad_et+=1
+                    # print("ad_et",ad_et)
+                    # print("s3",solution3[original_indices[ind]][tmp_index])
+                    # print("len",len(solution3[original_indices[ind]][tmp_index]))
+                    # print("min",min(solution3[original_indices[ind]][tmp_index]))
+                    if kb_cy[ind]==1:
+                        solution3[original_indices[ind]][tmp_index][ad_et]+=(len(solution3[original_indices[ind]][tmp_index])+1)
+                    # elif kb_cy[ind]==3: #不用加
+                    #     solution3[original_indices[ind]][tmp_index][ad_et]-=(len(solution3[original_indices[ind]][tmp_index])+1)
+                    # print("s3 after",solution3[original_indices[ind]][tmp_index])
+            #接著是2.4        
+            if kb_cy[ind]==2 or kb_cy[ind]==4: #2.4做的是差不多
+                # if len(solution3[ka_mi][tmp_index])!=1: #先處理前面 如果不是==1 就是999
+                #     ad_et=0
+                #     for inde in q3_index[ind][-1]: #這是裡面的值
+                #         if inde==kb_index[ind]:
+                #             # 真正條q3的地方 索引值
+                #             break
+                #         else:ad_et+=1
+                #     print("近來2.4")
+                #     print("ad_et",ad_et)
+                #     print("s3",solution3[ka_mi][tmp_index])
+                #     print("len",len(solution3[ka_mi][tmp_index]))
+                #     print("min",min(solution3[ka_mi][tmp_index]))
+                #     solution3[ka_mi][tmp_index][ad_et]+=0.5
+                #     print("s3 after",solution3[ka_mi][tmp_index])
+                # #前面好了
+                #不需要前面 因為吃的是第一個
+                tmp_index=solution2[original_indices[ind]] #重新賦予值
+                if len(solution3[original_indices[ind]][tmp_index])!=1: #再處理後面 如果不是==1 就是999
+                    ad_et=0
+                    for inde in ka_nt_index[ind-1]: #這是裡面的值
+                        if inde==kb_index[ind]:
+                            # 真正條q3的地方 索引值
+                            break
+                        else:ad_et+=1
+                    # print("近來了")
+                    # print("ad_et",ad_et)
+                    # print("s3",solution3[original_indices[ind]][tmp_index])
+                    # print("len",len(solution3[original_indices[ind]][tmp_index]))
+                    # print("min",min(solution3[original_indices[ind]][tmp_index]))
+                    if kb_cy[ind]==2:
+                        solution3[original_indices[ind]][tmp_index][ad_et]+=(len(solution3[original_indices[ind]][tmp_index])+1)
+                    # elif kb_cy[ind]==4:
+                    #     solution3[original_indices[ind]][tmp_index][ad_et]-=(len(solution3[original_indices[ind]][tmp_index])+1)
+                    # print("s3 after",solution3[original_indices[ind]][tmp_index])
+
+
+                    
+                    
+
+            
+        #在寫出一下1,2,3,4 要怎麼嘉進so3
+        #1.要 舊的+ min-1 新的+len()
+        #2.   舊的不用動  新的+len()
+
+        #3.    舊的+ min-1 新的不用動
+        #4.    舊的不用動    新的不用動
+
+        #1是 這個循環最後要尾 新的要頭 正常看還有多少get_fi
+        #2是 這個循環最後要頭 新的要頭 
+        #3是 這個循環最後要尾 新的要尾 正常看還有多少get_fi
+        #4是 這個循環最後要頭 新的要尾 
+
+        # print(f"出現數量結果 (counts): {counts}")
+        # print(f"出現元素結果 (elements): {elements}")
+    # print("q3_index",q3_index)
+    # print("q3_hamming",q3_hamming)
+    #這一段是在建立q3
+    for ind,so1 in enumerate(original_indices):
 
         index=solution2[so1] #因為斷邊 所以從這裡開始
         num=len(solution3[so1])
@@ -401,55 +1634,155 @@ def make_route(solution1,solution2,solution3,solution4,trans,n): #這樣是一�
             route_so.append(roa)
             route_gate.append(roa_gate)
             index+=1
+
+    # print("so3後",solution3)
     # print("route_so",route_so)
+
     # print("route_gate",route_gate)
     circuit,nope=make_circuit(route_so,route_gate,n) #丟進去生成兩個兩個
     
     return  circuit
 
-def make_route_fin(solution1,solution2,solution3,solution4,trans): #這樣是一組解弄成路線
-    route_so=[]
-    route_gate=[]
-    sorted_with_index = sorted(enumerate(solution1), key=lambda x: x[1],reverse=True)
-    original_indices = [idx for idx, val in sorted_with_index]
-    # print("trans",trans)
-    # print("對應原本的索引：", original_indices) #[1, 2, 0]
-    # print("solution3",solution3)
-    for so1 in original_indices:
 
-        index=solution2[so1] #因為斷邊 所以從這裡開始
-        num=len(solution3[so1])
-        
-        if num==1:
-            #代表只有一個交換 我們在前面只用一個 沒有循環 在這裡偷偷加一
-            num=2
-        for so2 in range(num-1): #要減一 因為斷邊
+def cnt(best_solution):
+    a=[]
+    # print("best",best_solution)
+    # for idx in range(len(best_solution)):
+    idx=0
+    while idx < len(best_solution)-1:
+        # print("best_solution[]",best_solution[idx])
+        ind = best_solution[idx].index(3) #抓3的index
+        # print("ind",ind)
+        tmp=True
+        next_i=idx+1 #下一個是索引值
+        a_tmp=[]
+        a_tmp.append(best_solution[idx]) #先放頭
+        while tmp and idx < len(best_solution)-1: #在這裡看 cn n
+            # print("dasdad")
+            next_3=best_solution[next_i].index(3)
+            # print("next3",next_3)
+            if ind ==next_3: #
+                a_tmp.append(best_solution[next_i])
+                next_i += 1 #下一個索引+1
+                idx += 1  #前一圈索引值+1 不知道會不會有問題
+                
+            else:tmp=False
+        idx+=1
+        # print("idx",idx)
+        # print("a_tmp",a_tmp)
+        # a_tmp=[[0,0,3],[1,0,3],[0,1,3],[1,1,3]] #4
+        # a_tmp=[[0,0,3],[1,0,3],[0,1,3],[1,1,3],[0,0,3],[0,0,3],[1,1,3]] #3個
+        # a_tmp=[[0,0,3],[1,0,3],[0,1,3],[1,1,3],[1,0,3],[1,1,3]] #2個
+        a_index=[]
+        index_three=a_tmp[0].index(3)
+        simplified = []
+
+        for item in a_tmp:
+            if item in simplified:
+                simplified.remove(item)  # 發現重複，立即成對抵消
+            else:
+                simplified.append(item)  # 沒出現過，先加入
+
+        a_tmp=simplified
+
+        if len(a_tmp)>2:
             
-            if index >=num: #如果超出迴圈 因為是循環 會回到第一個
-                index=0
-            # print("total_route_single[so1])",total_route_single[so1][index])
-            #0805 所以說我在這裡要用的是  
-            #差一個函式 是起點和終點 以及solution3的排序狀態 回傳一個roa
-            #index是段邊索引直
-            #中繼點
-            # print("solution3[so1][index] before",ssolution3[so1][index])
-            # roa,solution3[so1][index]=route_tenbit(index,solution3[so1][index],trans[so1])
-            # print("solution3[so1][index] after",solution3[so1][index])
-            roa=route_tenbit(index,solution3[so1][index],trans[so1])    
-            # print("roa",roa)
-            # roa=total_route_single[so1][index][solution3[so1][index]] #第幾個路線不就是看q3嗎
-            roa_gate=solution4[so1][index] #閘也要順序
-            #roa路線
-            #roa_gate是閘的順序
-            # print("roa_gate",roa_gate)
-            route_so.append(roa)
-            route_gate.append(roa_gate)
-            index+=1
-    # print("route_gate",route_gate)
-    circuit,tota=make_circuit(route_so,route_gate) #丟進去生成兩個兩個
-    
-    return  circuit,tota
+            b_tmp=[[1,0,3],[0,0,3],[1,1,3],[0,1,3]]
+            
+            for inds,ja in enumerate(a_tmp):
+                if ja in b_tmp :
+                    # idx = b_tmp.index(ja)
+                    b_tmp.remove(ja)
+                    a_index.append(inds)
 
+            for i in sorted(a_index, reverse=True):
+                a_tmp.pop(i)
+
+            iee=[]
+            for ie in range(3):
+                if ie!=index_three:
+                    iee.append(2)
+                else:
+                    iee.append(3)
+            if len(b_tmp)==0:#代表not
+                a.append(iee)
+            elif len(b_tmp)==1: #代表not +ccnot
+                a.append(iee)
+                a.append(b_tmp[0])
+                
+        elif len(a_tmp)==2:
+            ka=a_tmp[0]
+            kb=a_tmp[1]
+            k_tmp=[]
+            k_ct=0 #看會不會有 0,1 1,0的 不能和
+            for inx in range(3):
+                if ka[inx] == kb[inx]:
+                     k_tmp.append(ka[inx])
+                else: 
+                    k_tmp.append(2)
+                    k_ct+=1
+            if k_ct==1:
+                a.append(k_tmp)
+            else:
+                a.append(ka)
+                a.append(kb)
+
+               
+        else:a.append(a_tmp[0])
+        
+    # print("a",a)
+
+    a_cnt=[]
+    for idx in a:
+        if idx==[0,2,3]:
+            a_cnt.extend([[3,2,2], [1,2,3], [3,2,2]])
+        elif idx==[2,0,3]:
+            a_cnt.extend([[2,3,2],[2,1,3],[2,3,2]])
+        elif idx==[0,3,2]:
+            a_cnt.extend([[3,2,2],[1,3,2],[3,2,2]])
+        elif idx==[2,3,0]:
+            a_cnt.extend([[2,2,3],[2,3,1],[2,2,3]])
+        elif idx==[3,0,2]:
+            a_cnt.extend([[2,3,2],[3,1,2],[2,3,2]])
+        elif idx==[3,2,0]:
+            a_cnt.extend([[2,2,3],[3,2,1],[2,2,3]])
+        elif idx==[0,0,3]:
+            a_cnt.extend([[3,2,2],[2,3,2],[1,1,3],[2,3,2],[3,2,2]])
+        elif idx==[0,1,3]:
+            a_cnt.extend([[3,2,2],[1,1,3],[3,2,2]])
+        elif idx==[1,0,3]:
+            a_cnt.extend([[2,3,2],[1,1,2],[2,3,2]])
+        elif idx==[0,3,0]:
+            a_cnt.extend([[3,2,2],[2,2,3],[1,3,1],[2,2,3],[3,2,2]])
+        elif idx==[0,3,1]:
+            a_cnt.extend([[3,2,2],[1,3,1],[3,2,2]])
+        elif idx==[1,3,0]:
+            a_cnt.extend([[2,2,3],[1,3,1],[2,2,3]])
+        elif idx==[3,0,0]:
+            a_cnt.extend([[2,3,2],[2,2,3],[3,1,1],[2,2,3],[2,3,2]])
+        elif idx==[3,0,1]:
+            a_cnt.extend([[2,3,2],[3,1,1],[2,3,2]])
+        elif idx==[3,1,0]:
+            a_cnt.extend([[2,2,3],[3,1,1],[2,2,3]])
+        else:
+            a_cnt.append(idx)
+    # print("a_cnt",a_cnt)
+    #相同抵銷
+    b_cnn=[]
+    while len(a_cnt)>1:
+        ka_a=a_cnt[0]
+        ka_b=a_cnt[1]
+        if ka_a==ka_b:
+            a_cnt.pop(1)
+            a_cnt.pop(0)
+        else:
+            b_cnn.append(ka_a)
+            a_cnt.pop(0)
+    # print("a_cnt",a_cnt)
+    b_cnn.append(a_cnt[0])
+    # print("bcnn",b_cnn)
+
+    return b_cnn
 
 def make_circuit(route,gate,n): #路線 和閘順序 #可執行 但沒100確認
     #所以到這裡就沒有cycle分 照for迴圈生成電路!
@@ -619,7 +1952,7 @@ def make_circuit(route,gate,n): #路線 和閘順序 #可執行 但沒100確認
             
 
 
-    return real_circuit,len(circuit)
+    return real_circuit,len(real_circuit)
 
 
 def factorial_two(n):
@@ -631,566 +1964,7 @@ def factorial_two(n):
     # permutations = list(itertools.permutations(numbers))
     return result
 
-def walk(start,end,i): #這裡最複雜
-    # print("start:",start)
-    # print("end:",end)
-    # print("i:",i)
-    total_route=[] #全部路線陣列
 
-    num_bit=hamming_distance(start,end)
-    # print("num_bit",num_bit)
-    q4_table_cycle.append(num_bit)
-    index=1 #相差位元
-    ch=len(i)
-    total_route.append([start])
-    #索引值紀錄走訪位置
-    for su in range(num_bit-1): #走訪次數
-        route=[] #路線陣列
-        #把頭尾加進去
-        empty=0
-        for ind in range(ch):
-            x=i[ind] #現在走訪到的bit
-            if (hamming_distance(start,x)==index and hamming_distance(end,x)==num_bit-index):       #如果和起點相差index 和終點相差num_bit-index 代表加入x路線到陣列
-                route.append(x)
-                empty+=1    
-        if(empty==0):
-            #走一個total走訪的
-            for ind in range(len(output)):
-                if (hamming_distance(start,output[ind])==index and hamming_distance(end,output[ind])==num_bit-index): 
-                    route.append(output[ind])
-        else: empty=0
-        
-        total_route.append(route)
-        index+=1
-    total_route.append([end])
-    # print("totalroute",total_route)
-    #total_route代表每個位元差內的可選擇內容
-    # print("total_route",total_route)
-    # 再來要進行組合
-    num_ro=[] #路線索引值
-    total_combin=[]
-    if num_bit==1:
-        num_ro.append(len(total_route[1])) #直接跳過生成中間迴圈 讓while直接生效
-        combin=[]
-        combin.append(total_route[0][0])
-        combin.append(total_route[1][0])
-        total_combin.append(combin)
-    elif num_bit ==2: #應該是只有這個特例
-        num_ro.append(len(total_route[1])) #直接跳過生成中間迴圈 讓while直接生效
-        for xc in range(len(total_route[1])):
-            combin=[]
-            combin.append(total_route[0][0])
-            combin.append(total_route[1][xc])
-            combin.append(total_route[2][0])
-            total_combin.append(combin)
-    else:    
-        for ix in range(num_bit-1):
-            num_ro.append(0) #要看空的話要怎麼處理
-    
-    so=0 #有一個索引直來看是1,2,3,目前第幾個
-    pep=1 #代表走訪長度
-    # print("num_ro",num_ro)
-    # print("total_route",total_route)
-    befor=False
-    while num_ro[0]!=len(total_route[1]):#當不是第一個索引值超出時
-        # print("num_ro out",num_ro)
-        if befor ==True:
-            #如果對 代表so前一個有被換 要檢查
-            if (total_route[so][num_ro[so-1]],total_route[so+1][num_ro[so]])!=1:
-                so-=1
-                pep=so+1
-        befor=False
-        combin=[]
-        combin.append(total_route[0][0])
-        for tim in range(1,pep+1):
-            combin.append(total_route[tim][num_ro[tim-1]])
-        st=total_route[pep][num_ro[so]]
-        empty=0
-        sta=num_ro[so+1]
-        
-        
-        for cc in range(sta,len(total_route[pep+1])):#看目前索引直的下一個長度走訪，因為當前這一個只會抓陣列的第一個
-            tests=False
-            
-            found = False  # 設一個旗標
-            mid=total_route[pep+1][cc] #下一個 這裡出問題
-            # print("配對的是",mid)
-            # print("num_ro:",num_ro)
-            # print("cc",cc)
-            if hamming_distance(st,mid)==1:
-                # print("有")
-                combin.append(mid) #有的話加入 並且往下一層探索
-                num_ro[so+1]=cc #加進去超標 和最後一列才++ 
-                # print("num_ro IF ",num_ro)
-                # print("combin:",combin)
-                found = True  # 設定旗標
-                if len(combin)!=num_bit:
-                    pep+=1
-                    so+=1
-                    empty+=1
-                    tests=True
-                    #在這裡 索引直要跟著變
-                else:
-                    combin.append(total_route[-1][0])
-                    total_combin.append(combin)
-                    # pep-=1
-                    # so-=1
-                    # num_ro[so+1]+=1
-                    # print("total_combin:",total_combin)
-                    
-                    num_ro[so+1]=cc+1
-                    # break
-                    #我想在這裡break出for迴圈
-            else:
-                num_ro[so+1]=cc+1
-            
-            # print("cc進入藥檢檢",cc)
-            if tests:
-                if cc==len(total_route[pep])-1  : # 設定旗標 and  found == False 0602
-                    
-                    #如果當前狀態都找完了 +1 找下一個
-                    num_ro[so+1]=0
-                    #當前一個也是FINAL應該也要再清空
-                    num_ro[so]+=1
-                    befor=True
-                    okay=True #來裝前一個+1如果報表的話 前前一個要進位 這樣會無止盡 所以用布林來限制 就是如果沒大於 就ok 以及 如果加到num_ro[0]的話 也結束
-                    while (okay):
-                        # print("while")
-                        # print("num_ro in",num_ro)
-                        if num_ro[so]>=len(total_route[pep]) and so!=0:
-                            num_ro[so]=0 #前一個超出 也進位
-                            #前前一個再++
-                            if so >= 1:
-                                so-=1
-                            num_ro[so]+=1
-                            if so==0: okay=False
-                        else:okay=False
-                        pep=so+1 
-                    break
-                if found:
-                    break  # 外部有需要也可配合再跳
-            else:
-                if cc==len(total_route[pep+1])-1  : # 設定旗標 and  found == False 0602
-                    
-                    #如果當前狀態都找完了 +1 找下一個
-                    num_ro[so+1]=0
-                    #當前一個也是FINAL應該也要再清空
-                    num_ro[so]+=1
-                    befor=True
-                    okay=True #來裝前一個+1如果報表的話 前前一個要進位 這樣會無止盡 所以用布林來限制 就是如果沒大於 就ok 以及 如果加到num_ro[0]的話 也結束
-                    while (okay):
-                        # print("while")
-                        # print("num_ro in",num_ro)
-                        if num_ro[so]>=len(total_route[so+1]) and so!=0:
-                            num_ro[so]=0 #前一個超出 也進位
-                            #前前一個再++
-                            if so >= 1:
-                                so-=1
-                            num_ro[so]+=1
-                            if so==0: okay=False
-                        else:okay=False
-                        pep=so+1 
-                    break
-                if found:
-                    break  # 外部有需要也可配合再跳
-        # print("num_ro dddd",num_ro)
-    # print("total_combin:",total_combin)
-    # print("len(total_combin)",len(total_combin))
-    
-    # print("total_route原本的",total_route)
-
-
-    if len(total_combin)==0: #全部路線走訪一次生成
-        # print("來!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        total_route=[]
-        index=1
-            
-        total_route.append([start])
-        for su in range(num_bit-1): #走訪次數
-            route=[] #路線陣列
-            
-            
-            #走一個total走訪的
-            # print("output",output)
-            for ind in range(len(output)):
-                # print("start:",start)
-                if (hamming_distance(start,output[ind])==index and hamming_distance(end,output[ind])==num_bit-index): 
-                    route.append(output[ind])
-            else: empty=0
-            
-            total_route.append(route)
-            index+=1
-        total_route.append([end])
-
-        # print("len(total_combin)==0")
-        # print("len(total_combin)==0")
-        # print("len(total_combin)==0")
-        # print("total_route total",total_route)
-        num_ro=[] #路線索引值
-        # input_num=[]
-        # for xc in range (num_bit+1): #為適應pep 所以加入一樣的長度
-        #     input_num.append(input_list)
-        # print("input_num",input_num)
-        for ix in range(num_bit-1):
-            num_ro.append(0) #要看空的話要怎麼處理
-        # print("input",input_list)
-        # for xcb in range(2**n):
-        so=0 #有一個索引直來看是1,2,3,目前第幾個
-    pep=1 #代表走訪長度
-    # print("num_ro",num_ro)
-    # print("total_route",total_route)
-    befor=False
-    while num_ro[0]!=len(total_route[1]):#當不是第一個索引值超出時
-        # print("num_ro out",num_ro)
-        if befor ==True:
-            #如果對 代表so前一個有被換 要檢查
-            if (total_route[so][num_ro[so-1]],total_route[so+1][num_ro[so]])!=1:
-                so-=1
-                pep=so+1
-        befor=False
-        combin=[]
-        combin.append(total_route[0][0])
-        for tim in range(1,pep+1):
-            combin.append(total_route[tim][num_ro[tim-1]])
-        st=total_route[pep][num_ro[so]]
-        empty=0
-        sta=num_ro[so+1]
-        
-        
-        for cc in range(sta,len(total_route[pep+1])):#看目前索引直的下一個長度走訪，因為當前這一個只會抓陣列的第一個
-            tests=False
-            
-            found = False  # 設一個旗標
-            mid=total_route[pep+1][cc] #下一個 這裡出問題
-            # print("配對的是",mid)
-            # print("num_ro:",num_ro)
-            # print("cc",cc)
-            if hamming_distance(st,mid)==1:
-                # print("有")
-                combin.append(mid) #有的話加入 並且往下一層探索
-                num_ro[so+1]=cc #加進去超標 和最後一列才++ 
-                # print("num_ro IF ",num_ro)
-                # print("combin:",combin)
-                found = True  # 設定旗標
-                if len(combin)!=num_bit:
-                    pep+=1
-                    so+=1
-                    empty+=1
-                    tests=True
-                    #在這裡 索引直要跟著變
-                else:
-                    combin.append(total_route[-1][0])
-                    total_combin.append(combin)
-                    # pep-=1
-                    # so-=1
-                    # num_ro[so+1]+=1
-                    # print("total_combin:",total_combin)
-                    
-                    num_ro[so+1]=cc+1
-                    # break
-                    #我想在這裡break出for迴圈
-            else:
-                num_ro[so+1]=cc+1
-            
-            # print("cc進入藥檢檢",cc)
-            if tests:
-                if cc==len(total_route[pep])-1  : # 設定旗標 and  found == False 0602
-                    
-                    #如果當前狀態都找完了 +1 找下一個
-                    num_ro[so+1]=0
-                    #當前一個也是FINAL應該也要再清空
-                    num_ro[so]+=1
-                    befor=True
-                    okay=True #來裝前一個+1如果報表的話 前前一個要進位 這樣會無止盡 所以用布林來限制 就是如果沒大於 就ok 以及 如果加到num_ro[0]的話 也結束
-                    while (okay):
-                        # print("while")
-                        # print("num_ro in",num_ro)
-                        if num_ro[so]>=len(total_route[pep]) and so!=0:
-                            num_ro[so]=0 #前一個超出 也進位
-                            #前前一個再++
-                            if so >= 1:
-                                so-=1
-                            num_ro[so]+=1
-                            if so==0: okay=False
-                        else:okay=False
-                        pep=so+1 
-                    break
-                if found:
-                    break  # 外部有需要也可配合再跳
-            else:
-                if cc==len(total_route[pep+1])-1  : # 設定旗標 and  found == False 0602
-                    
-                    #如果當前狀態都找完了 +1 找下一個
-                    num_ro[so+1]=0
-                    #當前一個也是FINAL應該也要再清空
-                    num_ro[so]+=1
-                    befor=True
-                    okay=True #來裝前一個+1如果報表的話 前前一個要進位 這樣會無止盡 所以用布林來限制 就是如果沒大於 就ok 以及 如果加到num_ro[0]的話 也結束
-                    while (okay):
-                        # print("while")
-                        # print("num_ro in",num_ro)
-                        if num_ro[so]>=len(total_route[so+1]) and so!=0:
-                            num_ro[so]=0 #前一個超出 也進位
-                            #前前一個再++
-                            if so >= 1:
-                                so-=1
-                            num_ro[so]+=1
-                            if so==0: okay=False
-                        else:okay=False
-                        pep=so+1 
-                    break
-                if found:
-                    break  # 外部有需要也可配合再跳
-        # print("total_combin:",total_combin)
-        # print("len(total_combin)",len(total_combin))
-
-    return total_combin
-
-def test(): #路線 和閘順序 #可執行 但沒100確認
-    #在分配路線的地方 根據word一一驗證選取過程 0601
-    print("start:",start)
-    print("end:",end)
-    print("i:",i)
-    total_route=[] #全部路線陣列
-
-    num_bit=hamming_distance(start,end)
-    # print("num_bit",num_bit)
-    q4_table_cycle.append(num_bit)
-    index=1 #相差位元
-    ch=len(i)
-    total_route.append([start])
-    #索引值紀錄走訪位置
-    for su in range(num_bit-1): #走訪次數
-        route=[] #路線陣列
-        #把頭尾加進去
-        empty=0
-        for ind in range(ch):
-            x=i[ind] #現在走訪到的bit
-            if (hamming_distance(start,x)==index and hamming_distance(end,x)==num_bit-index):       #如果和起點相差index 和終點相差num_bit-index 代表加入x路線到陣列
-                route.append(x)
-                empty+=1    
-        if(empty==0):
-            #走一個total走訪的
-            for ind in range(len(output)):
-                if (hamming_distance(start,output[ind])==index and hamming_distance(end,output[ind])==num_bit-index): 
-                    route.append(output[ind])
-        else: empty=0
-        
-        total_route.append(route)
-        index+=1
-    total_route.append([end])
-    #total_route代表每個位元差內的可選擇內容
-    print("total_route",total_route)
-    # 再來要進行組合
-    num_ro=[] #路線索引值
-    total_combin=[]
-    if num_bit==1:
-        num_ro.append(len(total_route[1])) #直接跳過生成中間迴圈 讓while直接生效
-        combin=[]
-        combin.append(total_route[0][0])
-        combin.append(total_route[1][0])
-        total_combin.append(combin)
-    elif num_bit ==2: #應該是只有這個特例
-        num_ro.append(len(total_route[1])) #直接跳過生成中間迴圈 讓while直接生效
-        for xc in range(len(total_route[1])):
-            combin=[]
-            combin.append(total_route[0][0])
-            combin.append(total_route[1][xc])
-            combin.append(total_route[2][0])
-            total_combin.append(combin)
-    else:    
-        for ix in range(num_bit-1):
-            num_ro.append(0) #要看空的話要怎麼處理
-    
-    so=0 #有一個索引直來看是1,2,3,目前第幾個
-    pep=1 #代表走訪長度
-    # print("num_ro",num_ro)
-    # print("total_route",total_route)
-    
-    while num_ro[0]!=len(total_route[1]):#當不是第一個索引值超出時
-        # print("num_ro out",num_ro)
-        
-        combin=[]
-        combin.append(total_route[0][0])
-        for tim in range(1,pep+1):
-            combin.append(total_route[tim][num_ro[tim-1]])
-        st=total_route[pep][num_ro[so]]
-        empty=0
-        sta=num_ro[so+1]
-        # print("sta:",sta)
-        # print("so",so)
-        # print("pep",pep)
-        
-        for cc in range(sta,len(total_route[pep+1])):#看目前索引直的下一個長度走訪，因為當前這一個只會抓陣列的第一個
-            # print("num_ro for ",num_ro)
-            # print("sta:",sta)
-            # print("cc",cc)
-            
-            found = False  # 設一個旗標
-            mid=total_route[pep+1][cc] #下一個 這裡出問題
-            # print("mid",mid)
-            # print("num_ro:",num_ro)
-            # print("cc",cc)
-            if hamming_distance(st,mid)==1:
-                # print("有")
-                combin.append(mid) #有的話加入 並且往下一層探索
-                num_ro[so+1]=cc #加進去超標 和最後一列才++
-                # print("combin:",combin)
-                found = True  # 設定旗標
-                if len(combin)!=num_bit:
-                    pep+=1
-                    so+=1
-                    empty+=1
-                    #在這裡 索引直要跟著變
-                else:
-                    combin.append(total_route[-1][0])
-                    total_combin.append(combin)
-                    # num_ro[so+1]+=1
-                    # print("total_combin:",total_combin)
-                    
-                    num_ro[so+1]=cc+1
-                    # break
-                    #我想在這裡break出for迴圈
-            else:num_ro[so+1]=cc+1
-            
-            if cc==len(total_route[pep+1])-1  : # 設定旗標 and  found == False
-                #如果當前狀態都找完了 +1 找下一個
-                num_ro[so+1]=0
-                #當前一個也是FINAL應該也要再清空
-                num_ro[so]+=1
-                okay=True #來裝前一個+1如果報表的話 前前一個要進位 這樣會無止盡 所以用布林來限制 就是如果沒大於 就ok 以及 如果加到num_ro[0]的話 也結束
-                while (okay):
-                    # print("while")
-                    # print("num_ro in",num_ro)
-                    if num_ro[so]>=len(total_route[so+1]) and so!=0:
-                        num_ro[so]=0 #前一個超出 也進位
-                        #前前一個再++
-                        if so >= 1:
-                            so-=1
-                        num_ro[so]+=1
-                        if so==0: okay=False
-                    else:okay=False
-                    pep=so+1 
-                break
-            if found:
-                break  # 外部有需要也可配合再跳
-    # print("total_combin:",total_combin)
-    # print("len(total_combin)",len(total_combin))
-    
-    # print("total_route原本的",total_route)
-
-
-    if len(total_combin)==0: #全部路線走訪一次生成
-        print("來!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        total_route=[]
-        index=1
-            
-        total_route.append([start])
-        for su in range(num_bit-1): #走訪次數
-            route=[] #路線陣列
-            
-            
-            #走一個total走訪的
-            # print("output",output)
-            for ind in range(len(output)):
-                # print("start:",start)
-                if (hamming_distance(start,output[ind])==index and hamming_distance(end,output[ind])==num_bit-index): 
-                    route.append(output[ind])
-            else: empty=0
-            
-            total_route.append(route)
-            index+=1
-        total_route.append([end])
-
-        # print("len(total_combin)==0")
-        # print("len(total_combin)==0")
-        # print("len(total_combin)==0")
-        print("total_route total",total_route)
-        num_ro=[] #路線索引值
-        # input_num=[]
-        # for xc in range (num_bit+1): #為適應pep 所以加入一樣的長度
-        #     input_num.append(input_list)
-        # print("input_num",input_num)
-        for ix in range(num_bit-1):
-            num_ro.append(0) #要看空的話要怎麼處理
-        # print("input",input_list)
-        # for xcb in range(2**n):
-        so=0 #有一個索引直來看是1,2,3,目前第幾個
-        pep=1 #代表走訪長度
-
-
-        while num_ro[0]!=len(total_route[1]):#當不是第一個索引值超出時
-            print("num_ro out",num_ro)
-            
-            combin=[]
-            combin.append(total_route[0][0])
-            for tim in range(1,pep+1):
-                combin.append(total_route[tim][num_ro[tim-1]])
-            st=total_route[pep][num_ro[so]]
-            empty=0
-            sta=num_ro[so+1]
-            # print("sta:",sta)
-            # print("so",so)
-            # print("pep",pep)
-            
-            for cc in range(sta,len(total_route[pep+1])):#看目前索引直的下一個長度走訪，因為當前這一個只會抓陣列的第一個
-                print("num_ro for ",num_ro)
-                # print("sta:",sta)
-                # print("cc",cc)
-                
-                found = False  # 設一個旗標
-                mid=total_route[pep+1][cc] #下一個 這裡出問題
-                # print("mid",mid)
-                # print("num_ro:",num_ro)
-                # print("cc",cc)
-                if hamming_distance(st,mid)==1:
-                    # print("有")
-                    combin.append(mid) #有的話加入 並且往下一層探索
-                    num_ro[so+1]=cc #加進去超標 和最後一列才++
-                    # print("combin:",combin)
-                    found = True  # 設定旗標
-                    if len(combin)!=num_bit:
-                        pep+=1
-                        so+=1
-                        empty+=1
-                        #在這裡 索引直要跟著變
-                    else:
-                        combin.append(total_route[-1][0])
-                        total_combin.append(combin)
-                        # print("combin",combin)
-                        # num_ro[so+1]+=1
-                        # print("total_combin:",total_combin)
-                        
-                        num_ro[so+1]=cc+1
-                        # break
-                        #我想在這裡break出for迴圈
-                else:num_ro[so+1]=cc+1
-                
-                if cc==len(total_route[pep+1])-1  : # 設定旗標 and  found == False
-                    #如果當前狀態都找完了 +1 找下一個
-                    num_ro[so+1]=0
-                    #當前一個也是FINAL應該也要再清空
-                    num_ro[so]+=1
-                    okay=True #來裝前一個+1如果報表的話 前前一個要進位 這樣會無止盡 所以用布林來限制 就是如果沒大於 就ok 以及 如果加到num_ro[0]的話 也結束
-                    while (okay):
-                        # print("while")
-                        # print("num_ro in",num_ro)
-                        if num_ro[so]>=len(total_route[so+1]) and so!=0:
-                            num_ro[so]=0 #前一個超出 也進位
-                            #前前一個再++
-                            if so >= 1:
-                                so-=1
-                            num_ro[so]+=1
-                            if so==0: okay=False
-                        else:okay=False
-                        pep=so+1 
-                    break
-                if found:
-                    break  # 外部有需要也可配合再跳
-        # print("total_combin:",total_combin)
-        # print("len(total_combin)",len(total_combin))
-
-    return total_combin
 
 def updateQ(qindividuals1,qindividuals2,qindividuals3,qindividuals4,neighbours1,neighbours2,neighbours3,neighbours4,original_indices,cycles_bit):
     t = 0   
@@ -1225,7 +1999,7 @@ def updateQ(qindividuals1,qindividuals2,qindividuals3,qindividuals4,neighbours1,
                         qindividuals1[i][j][best_sol1[i][j]]=1
                         qindividuals1[i][j][worst_sol1[i][j]]=0
         # print("q",qindividuals1)
-        
+       
         
         best_sol2 = neighbours2[original_indices[t]]
         
@@ -1312,7 +2086,7 @@ def updateQ(qindividuals1,qindividuals2,qindividuals3,qindividuals4,neighbours1,
         t += 1
 
     # print("qindividuals4",qindividuals4)
-
+   
 
             
 
@@ -1505,5 +2279,18 @@ async def core_algorithm_v1(output,n):
                 if best_gate>local_gate:
                     best_gate=local_gate
                     best_solution=circuit_solution[original_indices[0]]
+                if i == NumIter and n==3:
+                    best_solution=cnt(best_solution)
+                    # print(check(aaa,n))
+                    # print("aaa",aaa)
                 yield f"data: {json.dumps({'total_epochs':NumIter,'epoch':i,'circuit':best_solution})}\n\n"
+                
+                # print("total_epochs",NumIter)
+                # print("epoch",i)
+                # print("circuit",best_solution)
+                
+                
             
+
+# output=[1,2,3,4,5,6,7,0]
+# core_algorithm_v1(output,3)
