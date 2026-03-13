@@ -36,21 +36,22 @@ function App() {
 		.catch(err => console.error("資料載入失敗:", err));
 	}, []);
 
-	const checkIterating = (action) => {
+	const checkIterating = (action, ...args) => {
 		if (isIterating) {
 			setDialogConfig({
 				isOpen: true,
 				message: "等待目前實驗迭代完成",
-				onlyConfirm: true, // 假設你 ConfirmDialog 有這個 prop 來隱藏取消按鈕
+				onlyConfirm: true,
 				onConfirm: closeDialog
 			});
 			return false;
 		}
-		action();
+		action(...args);
 		return true;
 	};
 
 	const handleSaveExperiment = async (data) => {
+		console.log(data)
 		try {
 			let response;
 			if (editingExp) {
@@ -414,7 +415,7 @@ function App() {
 				key={editingExp ? `edit-${editingExp.id}` : 'new-exp'}
 				isOpen={isDialogOpen} 
 				onClose={() => checkIterating(() => setIsDialogOpen(false))} 
-				onCreate={() => checkIterating(handleSaveExperiment)}
+				onCreate={(data) => checkIterating(handleSaveExperiment, data)}
 				initialData={editingExp}/>
 
 			
