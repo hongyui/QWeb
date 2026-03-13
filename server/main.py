@@ -7,6 +7,7 @@ from typing import List
 from sqlalchemy.orm import Session
 import models
 from core_algorithm import core_algorithm_v1
+from qiskit import QuantumCircuit, qasm2
 
 app = FastAPI()
 
@@ -53,7 +54,7 @@ def create_experiment(exp: ExperimentData, db: Session = Depends(get_db)):
     db.add(new_exp)
     db.commit()
     db.refresh(new_exp)
-    return {"id": new_exp.id}
+    return new_exp
 
 @app.post("/optimize/{exp_id}")
 async def run_optimization(exp_id: int, exp: ExperimentData, db: Session = Depends(get_db)):
@@ -68,6 +69,7 @@ async def run_optimization(exp_id: int, exp: ExperimentData, db: Session = Depen
                 data = json.loads(chunk.replace("data: ", ""))
                 if "circuit" in data:
                     final_circuit = data["circuit"]
+            print("final_circuit: ", final_circuit)
             yield chunk
         
         # 迭代完成後存入 DB
@@ -118,6 +120,80 @@ def clear_circuit(experiment_id: int, db: Session = Depends(get_db)):
     db_experiment.circuit_data = None 
     db.commit()
     return {"message": "電路資料已清空"}
+
+class ExportRequest(BaseModel):
+    circuit: list
+    title: str = "circuit"
+
+@app.post("/generate-qasm")
+async def generate_qasm(data: ExportRequest):
+    try:
+        circuit_steps = data.circuit
+        if not circuit_steps:
+            raise HTTPException(status_code=400, detail="沒有電路數據可供轉換")
+
+        # 取得 Qubit 數量 (n)
+        n = len(circuit_steps[0])
+        qc = QuantumCircuit(n)
+
+        for step in circuit_steps:
+            # 1 代表控制位 (Control), 3 代表目標位 (Target/NOT)
+            controls = [i for i, val in enumerate(step) if val == 1]
+            target = next((i for i, val in enumerate(step) if val == 3), -1)
+
+            if target != -1:
+                if len(controls) == 0:
+                    qc.x(target)
+                elif len(controls) == 1:
+                    qc.cx(controls[0], target)
+                elif len(controls) == 2:
+                    qc.ccx(controls[0], controls[1], target)
+                else:
+                    qc.mcx(controls, target)
+            
+            qc.barrier()
+
+        qasm_string = qasm2.dumps(qc)
+        
+        return {"qasm": qasm_string, "title": data.title}
+
+    except Exception as e:
+        print(f"QASM 生成錯誤: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/experiment/{experiment_id}")
+def update_experiment(experiment_id: int, exp: ExperimentData, db: Session = Depends(get_db)):
+    # 1. 查找該實驗是否存在
+    db_experiment = db.query(models.Experiment).filter(models.Experiment.id == experiment_id).first()
+    
+    if not db_experiment:
+        raise HTTPException(status_code=404, detail="實驗不存在")
+    
+    # 2. 更新基本欄位
+    db_experiment.title = exp.title
+    
+    # 檢查 N 是否改變，若改變則清空舊電路 (保持資料一致性)
+    if db_experiment.quantumN != exp.quantumN:
+        db_experiment.circuit_data = None
+    db_experiment.quantumN = exp.quantumN
+    
+    # 3. 處理 Mappings 並轉換為資料庫儲存格式 (CSV/TXT)
+    # 修正重點：直接從 exp.mappings 提取資料，避免 AttributeError
+    try:
+        txt_content = "\n".join([f"{item['input']},{item['target']}" for item in exp.mappings])
+        db_experiment.input_data = txt_content
+    except Exception as e:
+        print(f"資料轉換錯誤: {e}")
+        # 如果傳入的是 Pydantic 物件而非 dict，則嘗試 .get() 或屬性存取
+        txt_content = "\n".join([f"{item.get('input')},{item.get('target')}" for item in exp.mappings])
+        db_experiment.input_data = txt_content
+
+    # 4. 儲存並刷新資料
+    db.commit()
+    db.refresh(db_experiment)
+    
+    # 5. 回傳完整物件給前端
+    return db_experiment
 
 if __name__ == "__main__":
     import uvicorn

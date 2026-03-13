@@ -4,6 +4,7 @@ import Header from './components/Header';
 import ExperimentForm from './components/ExperimentForm';
 import CircuitCanvas from './components/CircuitCanvas';
 import NewExperimentDialog from './components/NewExperimentDialog';
+import ConfirmDialog from './components/ConfirmDialog';
 import { PlusCircle } from 'lucide-react';
 
 function App() {
@@ -13,66 +14,213 @@ function App() {
 	const [activeExp, setActiveExp] = useState(null); // 當前正在編輯/顯示的實驗
 	const [isIterating, setIsIterating] = useState(false);
 	const [showCircuit, setShowCircuit] = useState(false);
+	const [dialogConfig, setDialogConfig] = useState({
+        isOpen: false,
+        message: "",
+        onConfirm: null,
+		onlyConfirm: false
+    });
+	const [editingExp, setEditingExp] = useState(null);
+
+	const closeDialog = () => {
+        setDialogConfig({ ...dialogConfig, isOpen: false });
+    };
 
 	useEffect(() => {
-    fetch('/api/experiments')
-      .then(res => res.json())
-      .then(data => {
-          console.log("從後端抓到的所有實驗:", data); // 在此檢查 data[0].input_data 是否存在
+		fetch('/api/experiments')
+			.then(res => res.json())
+			.then(data => {
+				console.log("從後端抓到的所有實驗:", data); // 在此檢查 data[0].input_data 是否存在
 				setExperiments(data);
-			})
-      .catch(err => console.error("資料載入失敗:", err));
+		})
+		.catch(err => console.error("資料載入失敗:", err));
 	}, []);
 
-	const handleCreateNew = async (data) => {
-		try {
-			const response = await fetch('/api/experiments', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
+	const checkIterating = (action, ...args) => {
+		if (isIterating) {
+			setDialogConfig({
+				isOpen: true,
+				message: "等待目前實驗迭代完成",
+				onlyConfirm: true,
+				onConfirm: closeDialog
 			});
-			const { id } = await response.json();
-
-			const newExp = { id, ...data };
-			setExperiments([newExp, ...experiments]);
-			setActiveExp(newExp);
-			setShowCircuit(false);
-			setIsDialogOpen(false);
-		} catch (err) {
-        	console.error("建立實驗失敗:", err);
+			return false;
 		}
+		action(...args);
+		return true;
 	};
 
-	const handleClearAll = async () => {
+	const handleSaveExperiment = async (data) => {
+		console.log(data)
 		try {
-			await fetch('/api/experiments', { method: 'DELETE' });
-			setExperiments([]);
-			setActiveExp(null);
-			setShowCircuit(false);
+			let response;
+			if (editingExp) {
+				// 編輯模式：發送 PUT 請求到特定 ID
+				response = await fetch(`/api/experiment/${editingExp.id}`, {
+					method: 'PUT',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(data)
+				});
+			} else {
+				// 新增模式：發送 POST 請求
+				response = await fetch('/api/experiments', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(data)
+				});
+			}
+			if (!response.ok) throw new Error("後端連線或處理失敗");
+			const savedData = await response.json(); 
+			// 統一解析後端回傳的資料
+			const formattedExp = {
+				...savedData,
+				// 使用你現有的解析函式將 CSV 字串轉回陣列物件
+				mappings: parseInputData(savedData.input_data),
+				// 解析電路資料 (如果存在的話)
+				circuit: savedData.circuit_data ? JSON.parse(savedData.circuit_data) : null
+			};
+			if (editingExp) {
+				// 更新現有列表中的該筆實驗資料
+				setExperiments(prev => prev.map(exp => exp.id === formattedExp.id ? formattedExp : exp));
+			} else {
+				// 將新建立的實驗加入列表頂部
+				setExperiments(prev => [formattedExp, ...prev]);
+			}
+			// 設定當前選取的實驗，讓畫面立即更新
+			setActiveExp(formattedExp);
+			setShowCircuit(!!formattedExp.circuit); // 若有電路資料則顯示畫布
+			// 關閉對話框並清空編輯狀態
+			setIsDialogOpen(false);
+			setEditingExp(null);
 		} catch (err) {
-			console.error('清除資料失敗:', err);
+			setDialogConfig({
+				isOpen: true,
+				message: "儲存失敗，請檢查後端連線",
+				onConfirm: async () => {}
+			});
+			console.error("Save Error:", err);
 		}
 	};
 
+	const handleSelectExperiment = async (exp) => {
+		try {
+			const response = await fetch(`/api/experiments/${exp.id}`);
+			const fullData = await response.json();
+			const mappedData = parseInputData(fullData.input_data);
+			let parsedCircuit = null;
+			if (fullData.circuit_data) {
+				try {
+					parsedCircuit = typeof fullData.circuit_data === 'string' 
+					? JSON.parse(fullData.circuit_data) 
+					: fullData.circuit_data;
+				} catch (e) {
+					console.error("解析電路資料失敗:", e);
+				}
+			}
+			setActiveExp({
+				...fullData,
+				mappings: mappedData,
+				circuit: parsedCircuit 
+			});
+			setShowCircuit(!!parsedCircuit);
+		} catch (err) {
+		console.error("載入實驗詳情失敗", err);
+		}
+	}
+
+	// 新增一個開啟編輯的方法
+	const handleEdit = (exp) => {
+		setEditingExp(exp);
+		setIsDialogOpen(true);
+	};
+
+	const handleClearAll = () => {
+        setDialogConfig({
+            isOpen: true,
+            message: "確定要刪除所有實驗嗎？",
+            onConfirm: async () => {
+                try {
+                    await fetch('/api/experiments', { method: 'DELETE' });
+                    setExperiments([]);
+                    setActiveExp(null);
+                    setShowCircuit(false);
+                } catch (err) {
+                    console.error("清除資料失敗:", err);
+                }
+                closeDialog();
+            }
+        });
+    };
 	const handleClear = async () => {
 		if (!activeExp) return;
 		const updatedExp = { ...activeExp, circuit: null, circuit_data: null };
 		setActiveExp(updatedExp);
 		setShowCircuit(false);
-
-		setExperiments((prev) =>
-			prev.map((exp) => (exp.id === updatedExp.id ? updatedExp : exp)),
-		);
+		setExperiments(prev => prev.map(exp => 
+			exp.id === updatedExp.id ? updatedExp : exp
+		));
 
 		// 同步後端
 		try {
 			await fetch(`/api/experiments/${updatedExp.id}`, {
 				method: 'PUT',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ circuit_data: null }),
+				body: JSON.stringify({ circuit_data: null })
 			});
 		} catch (err) {
-			console.error('清除電路資料失敗:', err);
+			console.error("清除電路資料失敗:", err);
+		}
+	};
+
+	const handleExport = async () => {
+		// 檢查是否有有效的實驗與電路數據
+		if (!activeExp || !activeExp.circuit) {
+			setDialogConfig({
+				isOpen: true,
+				message: "目前沒有可匯出的電路資料！",
+				onConfirm: async () => {}
+			});
+			return;
+		}
+
+		try {
+			// 呼叫後端新增的 generate-qasm 路由
+			const response = await fetch('/api/generate-qasm', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					circuit: activeExp.circuit,
+					title: activeExp.title || "circuit"
+				}),
+			});
+
+			if (!response.ok) {
+				throw new Error('後端生成 QASM 失敗');
+			}
+
+			const data = await response.json();
+			const qasmString = data.qasm;
+
+			// 建立下載連結並觸發下載
+			const blob = new Blob([qasmString], { type: "text/plain" });
+			const url = URL.createObjectURL(blob);
+			const link = document.createElement('a');
+			link.href = url;
+			link.download = `${data.title}.qasm`;
+			document.body.appendChild(link);
+			link.click();
+
+			// 清理
+			document.body.removeChild(link);
+			URL.revokeObjectURL(url);
+
+		} catch (error) {
+			console.error("匯出失敗:", error);
+			setDialogConfig({
+				isOpen: true,
+				message: "匯出失敗，請檢查後端連線或電路數據是否正確。",
+				onConfirm: async () => {}
+			});
 		}
 	};
 
@@ -84,7 +232,7 @@ function App() {
 		const payload = {
 			title: activeExp.title,
 			quantumN: activeExp.quantumN,
-			mappings: activeExp.mappings || [],
+			mappings: activeExp.mappings || []
 		};
 
 		try {
@@ -97,7 +245,7 @@ function App() {
 
 			const reader = response.body.getReader();
 			const decoder = new TextDecoder();
-			let buffer = '';
+			let buffer = ""; 
 
 			while (true) {
 				const { done, value } = await reader.read();
@@ -110,132 +258,149 @@ function App() {
 				for (const line of lines) {
 					if (line.startsWith('data: ')) {
 						const parsedData = JSON.parse(line.replace('data: ', ''));
-						console.log('後端傳回的原始數據:', parsedData);
-						setActiveExp((prev) => ({
+						console.log("後端傳回的原始數據:", parsedData);
+						setActiveExp(prev => ({
 							...prev,
 							circuit: parsedData.circuit,
 							epoch: parsedData.epoch,
-                        progress: parsedData.total_epochs > 0 
-                            ? Math.min(100, Math.round((parsedData.epoch / parsedData.total_epochs) * 100)) 
-									: 0,
-                        circuit_data: parsedData.circuit_data || null
+							progress: parsedData.total_epochs > 0 
+							? Math.min(100, Math.round((parsedData.epoch / parsedData.total_epochs) * 100)) 
+							: 0,
+							circuit_data: parsedData.circuit_data || null
 						}));
 					}
 				}
 			}
 		} catch (error) {
-        console.error("連接錯誤:", error);
+			console.error("連接錯誤:", error);
 		} finally {
 			setIsIterating(false);
 		}
 	};
 
-	const handleDelete = async (id) => {
-    if (window.confirm("確定要刪除這個實驗嗎？")) {
-			// 從前端 State 移除，讓 UI 即時更新
-			setExperiments((prev) => prev.filter((exp) => exp.id !== id));
-			try {
-				await fetch(`/api/experiments/${id}`, {
-					method: 'DELETE',
-				});
-			} catch (error) {
-        console.error("刪除失敗:", error);
-			}
-
-			// 如果刪除的剛好是目前正在查看的實驗，則清空畫面
-			if (activeExp && activeExp.id === id) {
-				setActiveExp(null);
-			}
-		}
-	};
+	const handleDelete = (id) => {
+        setDialogConfig({
+            isOpen: true,
+            message: "確定要刪除這個實驗嗎？",
+            onConfirm: async () => {
+                setExperiments((prev) => prev.filter((exp) => exp.id !== id));
+                try {
+                    await fetch(`/api/experiments/${id}`, { method: 'DELETE' });
+                } catch (error) {
+                    console.error("刪除失敗:", error);
+                }
+                if (activeExp && activeExp.id === id) {
+                    setActiveExp(null);
+                }
+                closeDialog(); // 執行完畢關閉對話框
+            }
+        });
+    };
 
 	const parseInputData = (inputDataString) => {
 		if (!inputDataString) return [];
+		return inputDataString.split('\n').filter(line => line.trim() !== "").map(line => {
+			const [input, target] = line.split(',');
+			const targetint = parseInt(target, 10)
+			return { 
+				input: input, 
+				target: targetint,
+				output: targetint.toString(2).padStart(input.length, '0')
+			};
+		});
+	};
 
-    return inputDataString.split('\n').filter(line => line.trim() !== "").map(line => {
-				const [input, target] = line.split(',');
-        const targetint = parseInt(target, 10)
-				return {
-					input: input,
-					target: targetint,
-            output: targetint.toString(2).padStart(input.length, '0')
-				};
-			});
+	const handleBackToHome = () => {
+		setActiveExp(null);
+		setShowCircuit(false);
 	};
 
 	return (
 		<div className="app-layout">
-			<Sidebar
-				isOpen={isSidebarOpen}
-				experiments={experiments}
-				onAdd={() => setIsDialogOpen(true)}
-				onClearAll={handleClearAll}
-				onSelect={async (exp) => {
-					try {
-						const response = await fetch(`/api/experiments/${exp.id}`);
-						const fullData = await response.json();
-						const mappedData = parseInputData(fullData.input_data);
-						let parsedCircuit = null;
-						if (fullData.circuit_data) {
-							try {
-                      parsedCircuit = typeof fullData.circuit_data === 'string' 
-										? JSON.parse(fullData.circuit_data)
-										: fullData.circuit_data;
-							} catch (e) {
-                      console.error("解析電路資料失敗:", e);
-							}
-						}
-						setActiveExp({
-							...fullData,
-							mappings: mappedData,
-                  circuit: parsedCircuit 
-						});
-						setShowCircuit(!!parsedCircuit);
-					} catch (err) {
-              console.error("載入實驗詳情失敗", err);
-					}
-				}}
-				onDelete={handleDelete}
+			<Sidebar 
+				isOpen={isSidebarOpen} 
+				experiments={experiments} 
+				onAdd={() => checkIterating(() => {
+					setEditingExp(null);
+					setIsDialogOpen(true);
+				})}
+				onClearAll={() => checkIterating(handleClearAll)}
+				onSelect={(exp) => checkIterating(() => handleSelectExperiment(exp))}
+				onDelete={(id) => checkIterating(() => handleDelete(id))}
+				activeId={activeExp?.id}
+				onEdit={(exp) => checkIterating(() => handleEdit(exp))}
 			/>
 
 			<div className="flex-1 flex flex-col min-w-0">
-				<Header toggleSidebar={() => setSidebarOpen(!isSidebarOpen)} />
+				<Header
+					toggleSidebar={() => setSidebarOpen(!isSidebarOpen)}
+					onBackToHome={() => checkIterating(handleBackToHome)}
+				/>
 
 				<main className="main-content">
 					<div className="content-container">
 						{activeExp ? (
-							<div className="transition-all duration-500 opacity-100 translate-y-0">
-								<ExperimentForm
-									currentExp={activeExp}
-									setExp={setActiveExp}
-									onStart={handleStartIteration}
-									onClear={handleClear}
-									isIterating={isIterating}
-								/>
-								<CircuitCanvas
-									showCircuit={showCircuit}
-									isIterating={isIterating}
-									n={activeExp.quantumN}
-									circuitData={activeExp.circuit}
-									progress={activeExp.progress || 0}
-								/>
+							<div 
+								key={activeExp.id} 
+								className="animate-in"
+							>
+								<div className="active-exp-wrapper">
+									<ExperimentForm
+										currentExp={activeExp}
+										setExp={setActiveExp}
+										onStart={handleStartIteration}
+										onClear={() => checkIterating(handleClear)}
+										isIterating={isIterating}
+										onExport={() => checkIterating(handleExport)}
+										onEdit={() => checkIterating(() => handleEdit(activeExp))}
+									/>
+
+									<CircuitCanvas
+										showCircuit={showCircuit}
+										isIterating={isIterating}
+										n={activeExp.quantumN}
+										circuitData={activeExp.circuit}
+										progress={activeExp.progress || 0}
+									/>
+								</div>
 							</div>
 						) : (
-							<div className="empty-state-wrapper">
-								<div className="empty-state-card">
-									<div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-6">
-										<PlusCircle size={40} />
+							<div key="home" className="animate-in">
+								<div className="empty-dashboard-wrapper">
+									<section className="welcome-section">
+										<div>
+											<h1 className="welcome-title">您好, 研究員</h1>
+											<p className="welcome-subtitle">準備好開始新的量子電路優化了嗎？</p>
+										</div>
+										<div className="stat-card-group">
+											<div className="stat-card">
+												<div className="stat-card-label">系統狀態</div>
+												<div className="stat-card-value status-ready">Ready</div>
+											</div>
+										</div>
+									</section>
+
+									{/* 主操作區 */}
+									<div className="hero-grid">
+										<div className="hero-banner">
+											<div className="hero-content">
+												<h2 className="hero-title">建立全新實驗</h2>
+												<p className="hero-desc">
+													目前尚未選取任何實驗。請從側邊欄選擇歷史紀錄，或點擊下方按鈕建立新的電路優化任務。
+												</p>
+												<button
+													onClick={() => checkIterating(() => setIsDialogOpen(true))}
+													className="hero-btn"
+												>
+													<PlusCircle size={20} />
+													立即開始
+												</button>
+											</div>
+											<div className="hero-bg-icon">
+												<PlusCircle size={240} />
+											</div>
+										</div>
 									</div>
-                  <h2 className="text-2xl font-bold text-slate-800 mb-2">開始您的量子實驗</h2>
-									<p className="text-slate-500 mb-8 leading-relaxed">
-										目前尚未選取任何實驗。請從側邊欄選擇歷史紀錄，或點擊下方按鈕建立新的電路優化任務。
-									</p>
-									<button
-										onClick={() => setIsDialogOpen(true)}
-										className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold transition shadow-lg shadow-blue-100"
-									>
-										立即建立新實驗
-									</button>
 								</div>
 							</div>
 						)}
@@ -243,10 +408,20 @@ function App() {
 				</main>
 			</div>
 
-			<NewExperimentDialog
-				isOpen={isDialogOpen}
-				onClose={() => setIsDialogOpen(false)}
-				onCreate={handleCreateNew}
+			<NewExperimentDialog 
+				key={editingExp ? `edit-${editingExp.id}` : 'new-exp'}
+				isOpen={isDialogOpen} 
+				onClose={() => checkIterating(() => setIsDialogOpen(false))} 
+				onCreate={(data) => checkIterating(handleSaveExperiment, data)}
+				initialData={editingExp}/>
+
+			
+			<ConfirmDialog 
+				isOpen={dialogConfig.isOpen}
+				message={dialogConfig.message}
+				onConfirm={dialogConfig.onConfirm}
+				onCancel={closeDialog}
+				onlyConfirm={isIterating}
 			/>
 		</div>
 	);

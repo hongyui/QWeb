@@ -1,7 +1,7 @@
 import React from 'react';
-import { Plus, Trash2, History, Cpu} from 'lucide-react';
+import { Plus, Trash2, History, Cpu, Edit2} from 'lucide-react';
 
-const Sidebar = ({ isOpen, experiments, onAdd, onClearAll, onSelect, onDelete }) => {
+const Sidebar = ({ isOpen, experiments, onAdd, onClearAll, onSelect, onDelete, activeId, onEdit }) => {
     return (
         <aside className={`sidebar-aside ${isOpen ? 'w-64' : 'w-0'}`}>
             <div className="sidebar-inner">
@@ -24,30 +24,56 @@ const Sidebar = ({ isOpen, experiments, onAdd, onClearAll, onSelect, onDelete })
                         <History size={12} className="shrink-0" /> 歷史紀錄
                     </div>
                     <div className="space-y-1">
-                        {experiments.map((exp) => (
-                            /* 將 group 放在 className 中，不要 @apply 到 CSS 裡 */
-                            <div 
-                                key={exp.id} 
-                                onClick={() => onSelect(exp)}
-                                className="group sidebar-item-style"
-                            >
-                                <div className="truncate text-sm text-slate-300 group-hover:text-white flex-1 mr-2">
-                                    {exp.title}
+                        {experiments.map((exp) => {
+                            const isActive = activeId === exp.id;
+                            
+                            return (
+                                /* 將 group 放在 className 中，不要 @apply 到 CSS 裡 */
+                                <div 
+                                    key={exp.id} 
+                                    onClick={() => onSelect(exp)}
+                                    className={`group sidebar-item-style transition-all duration-200 ${
+                                        isActive 
+                                        ? 'bg-blue-600/20 border-l-4 border-blue-500 text-white' // 選中時的樣式
+                                        : 'hover:bg-slate-800 border-l-4 border-transparent'     // 未選中時的樣式
+                                    }`}
+                                >
+                                    <div className={`truncate text-sm flex-1 mr-2 ${
+                                        isActive ? 'text-blue-400 font-bold' : 'text-slate-300 group-hover:text-white'
+                                    }`}>
+                                        {exp.title}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className={`sidebar-label-tag ${
+                                            isActive ? 'bg-blue-500/30 text-blue-300' : ''
+                                        }`}>
+                                            n={exp.quantumN}
+                                        </span>
+                                        {isActive && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation(); // 防止觸發 onSelect
+                                                    onEdit(exp);
+                                                }}
+                                                className="text-blue-400 hover:text-blue-300 transition-colors p-1"
+                                                title="編輯實驗參數"
+                                            >
+                                                <Edit2 size={14} />
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onDelete(exp.id);
+                                            }}
+                                            className="text-slate-500 hover:text-red-400 transition-colors"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="sidebar-label-tag">n={exp.quantumN}</span>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onDelete(exp.id);
-                                        }}
-                                        className="text-slate-500 hover:text-red-400 transition-colors"
-                                    >
-                                        <Trash2 size={14} />
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
 

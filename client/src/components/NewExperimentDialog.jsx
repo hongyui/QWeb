@@ -2,34 +2,57 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, ChevronLeft, ChevronRight, Upload, Table as TableIcon } from 'lucide-react';
 
     
+const parseInputData = (inputDataString) => {
+    if (!inputDataString) return [];
 
-const getInitialState = () => ({
-    title: '未命名實驗',
-    quantumN: 4,
-    mappings: []
-});
+    return inputDataString.split('\n').filter(line => line.trim() !== "").map(line => {
+        const [input, target] = line.split(',');
+        const targetint = parseInt(target, 10)
+        return { 
+            input: input, 
+            target: targetint,
+            output: targetint.toString(2).padStart(input.length, '0')
+        };
+    });
+};
 
-const NewExperimentDialog = ({ isOpen, onClose, onCreate }) => {
+const getInitialState = (initialData) => {
+    if (initialData) {
+        return {
+            title: initialData.title || '未命名實驗',
+            quantumN: initialData.quantumN || 1,
+            mappings: parseInputData(initialData.input_data) || [] 
+        };
+    }
+    return {
+        title: '未命名實驗',
+        quantumN: 1,
+        mappings: []
+    };
+};
+
+const NewExperimentDialog = ({ isOpen, onClose, onCreate, initialData }) => {
     const [step, setStep] = useState(1);
     const fileInputRef = useRef(null);
-    const [formData, setFormData] = useState({
-        title: '未命名實驗',
-        quantumN: 4,
-        mappings: [] // 儲存 Step 2 的表格數據
-    });
+    const [formData, setFormData] = useState(getInitialState(initialData));
     const isReady = step === 1 ? formData.title.length > 0 : formData.mappings.length > 0;
+
 
     useEffect(() => {
         if (isOpen) {
             setStep(1);
-            setFormData(getInitialState()); 
+            setFormData(getInitialState(initialData)); 
         }
-    }, [isOpen]);
+        
+    }, [isOpen, initialData]);
 
-    // 2. 當 N 改變時：只生成新的表格數據，不重置 title
+    // 當 N 改變時只生成新的表格數據，不重置 title
     useEffect(() => {
-        // 只有在視窗開啟時才執行
         if (isOpen) {
+            // 如果是編輯模式，且 N 沒變，且 mappings 已經有資料，就不要覆蓋它
+            if (initialData && formData.quantumN === initialData.quantumN && formData.mappings.length > 0) {
+                return;
+            }
             const numRows = Math.pow(2, formData.quantumN);
             const newMappings = Array.from({ length: numRows }, (_, i) => ({
                 input: i.toString(2).padStart(formData.quantumN, '0'),
@@ -37,7 +60,6 @@ const NewExperimentDialog = ({ isOpen, onClose, onCreate }) => {
                 output: i.toString(2).padStart(formData.quantumN, '0')
             }));
             
-            // 使用 prev 確保只更新 mappings，不影響 title
             setFormData(prev => ({ ...prev, mappings: newMappings }));
         }
     }, [formData.quantumN, isOpen]);
@@ -54,7 +76,18 @@ const NewExperimentDialog = ({ isOpen, onClose, onCreate }) => {
 
     const handleTableChange = (index, newValue) => {
         const updatedMappings = [...formData.mappings];
+        // 計算當前最大允許值
+        const maxVal = Math.pow(2, formData.quantumN) - 1;
         const numericValue = parseInt(newValue, 10) || 0;
+
+        if (isNaN(numericValue)) {
+            numericValue = 0;
+        } else if (numericValue > maxVal) {
+            numericValue = maxVal; // 超過最大值則強制等於最大值
+        } else if (numericValue < 0) {
+            numericValue = 0;      // 小於 0 則強制等於 0
+        }
+
         const binaryValue = numericValue.toString(2).padStart(formData.quantumN, '0');
 
         updatedMappings[index] = {
@@ -137,7 +170,14 @@ const NewExperimentDialog = ({ isOpen, onClose, onCreate }) => {
                                     type="number"
                                     className="w-24 p-2 border border-blue-100 rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none"
                                     value={formData.quantumN}
-                                    onChange={(e) => setFormData({...formData, quantumN: parseInt(e.target.value) || 0})}
+                                    onChange={(e) => {
+                                        const val = parseInt(e.target.value);
+                                        const safeValue = isNaN(val) ? 1 : Math.max(1, val);
+                                        setFormData({
+                                            ...formData, 
+                                            quantumN: safeValue
+                                        });
+                                    }}
                                 />
                             </div>
                         </div>
@@ -153,7 +193,7 @@ const NewExperimentDialog = ({ isOpen, onClose, onCreate }) => {
                                 onClick={() => fileInputRef.current.click()}
                                 className="flex items-center gap-2 px-4 py-2 border border-blue-200 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition"
                             >
-                                <Upload size={16} /> 從 TXT 上傳
+                                <Upload size={16} /> 匯入
                             </button>
                         </div>
                         <div className="border border-slate-200 rounded-xl overflow-hidden">
@@ -174,6 +214,8 @@ const NewExperimentDialog = ({ isOpen, onClose, onCreate }) => {
                                                     type="number"
                                                     className="w-full p-2 border border-slate-200 rounded bg-white focus:border-blue-500 outline-none"
                                                     value={row.target}
+                                                    min="0"
+                                                    max={Math.pow(2, formData.quantumN) - 1}
                                                     onChange={(e) => handleTableChange(idx, e.target.value)}
                                                 />
                                             </td>
